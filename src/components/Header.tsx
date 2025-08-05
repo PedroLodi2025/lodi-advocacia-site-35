@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Menu, X, ChevronDown } from "lucide-react";
+import LoginDialog from "./LoginDialog";
 // Logo will be referenced directly from public folder
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
+  const [currentUser, setCurrentUser] = useState<string>("");
 
   const services = [
     { name: "Direito Bancário", url: "https://bancos.lodiadvocacia.com.br" },
@@ -26,20 +25,27 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = (userData: { username: string; password: string }) => {
     // Simple authentication - in production, use proper authentication
-    if (loginData.username === "admin" && loginData.password === "lodi2025") {
+    if (userData.username === "admin" && userData.password === "lodi2025") {
       setIsLoggedIn(true);
-      setShowLogin(false);
+      setCurrentUser(userData.username);
     } else {
       alert("Credenciais inválidas");
     }
   };
 
+  const handleRegister = (userData: { username: string; email: string; password: string; confirmPassword: string }) => {
+    // Simulate registration - in production, use proper backend
+    console.log("Registrando usuário:", userData);
+    alert(`Usuário ${userData.username} registrado com sucesso! (Simulação)`);
+    setIsLoggedIn(true);
+    setCurrentUser(userData.username);
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setLoginData({ username: "", password: "" });
+    setCurrentUser("");
   };
 
   return (
@@ -113,60 +119,13 @@ const Header = () => {
 
           {/* Admin Login */}
           <div className="hidden lg:flex items-center space-x-4">
-            {!isLoggedIn ? (
-              !showLogin ? (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowLogin(true)}
-                  className="flex items-center space-x-2"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Admin</span>
-                </Button>
-              ) : (
-                <form onSubmit={handleLogin} className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="Usuário"
-                    value={loginData.username}
-                    onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                    className="w-24 h-8 text-xs"
-                    required
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Senha"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                    className="w-24 h-8 text-xs"
-                    required
-                  />
-                  <Button type="submit" size="sm" variant="default">
-                    Entrar
-                  </Button>
-                  <Button 
-                    type="button" 
-                    size="sm" 
-                    variant="ghost"
-                    onClick={() => setShowLogin(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </form>
-              )
-            ) : (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">Admin logado</span>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleLogout}
-                >
-                  Sair
-                </Button>
-              </div>
-            )}
+            <LoginDialog
+              onLogin={handleLogin}
+              onRegister={handleRegister}
+              isLoggedIn={isLoggedIn}
+              onLogout={handleLogout}
+              adminName={currentUser}
+            />
           </div>
 
           {/* Mobile Menu Button */}
@@ -215,64 +174,15 @@ const Header = () => {
                 Contato
               </button>
               <div className="px-4 pt-4">
-                {!isLoggedIn ? (
-                  !showLogin ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowLogin(true)}
-                      className="w-full flex items-center justify-center space-x-2"
-                    >
-                      <User className="h-4 w-4" />
-                      <span>Login Admin</span>
-                    </Button>
-                  ) : (
-                    <form onSubmit={handleLogin} className="space-y-2">
-                      <Input
-                        type="text"
-                        placeholder="Usuário"
-                        value={loginData.username}
-                        onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                        className="w-full"
-                        required
-                      />
-                      <Input
-                        type="password"
-                        placeholder="Senha"
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                        className="w-full"
-                        required
-                      />
-                      <div className="flex space-x-2">
-                        <Button type="submit" size="sm" className="flex-1">
-                          Entrar
-                        </Button>
-                        <Button 
-                          type="button" 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => setShowLogin(false)}
-                          className="flex-1"
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    </form>
-                  )
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-center text-muted-foreground">Admin logado</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleLogout}
-                      className="w-full"
-                    >
-                      Sair
-                    </Button>
-                  </div>
-                )}
+                <div className="w-full">
+                  <LoginDialog
+                    onLogin={handleLogin}
+                    onRegister={handleRegister}
+                    isLoggedIn={isLoggedIn}
+                    onLogout={handleLogout}
+                    adminName={currentUser}
+                  />
+                </div>
               </div>
             </nav>
           </div>
