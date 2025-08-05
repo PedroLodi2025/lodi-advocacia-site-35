@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
-import LoginDialog from "./LoginDialog";
+import { Menu, X, ChevronDown, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 // Logo will be referenced directly from public folder
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string>("");
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const services = [
     { name: "Direito Bancário", url: "https://bancos.lodiadvocacia.com.br" },
@@ -25,27 +26,16 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const handleLogin = (userData: { username: string; password: string }) => {
-    // Simple authentication - in production, use proper authentication
-    if (userData.username === "admin" && userData.password === "lodi2025") {
-      setIsLoggedIn(true);
-      setCurrentUser(userData.username);
+  const handleLoginRedirect = () => {
+    navigate('/auth');
+  };
+
+  const handleAdminRedirect = () => {
+    if (user) {
+      navigate('/admin');
     } else {
-      alert("Credenciais inválidas");
+      navigate('/auth');
     }
-  };
-
-  const handleRegister = (userData: { username: string; email: string; password: string; confirmPassword: string }) => {
-    // Simulate registration - in production, use proper backend
-    console.log("Registrando usuário:", userData);
-    alert(`Usuário ${userData.username} registrado com sucesso! (Simulação)`);
-    setIsLoggedIn(true);
-    setCurrentUser(userData.username);
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setCurrentUser("");
   };
 
   return (
@@ -119,13 +109,29 @@ const Header = () => {
 
           {/* Admin Login */}
           <div className="hidden lg:flex items-center space-x-4">
-            <LoginDialog
-              onLogin={handleLogin}
-              onRegister={handleRegister}
-              isLoggedIn={isLoggedIn}
-              onLogout={handleLogout}
-              adminName={currentUser}
-            />
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleAdminRedirect}>
+                  Painel Admin
+                </Button>
+                <Button variant="outline" size="sm" onClick={signOut}>
+                  Sair
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center space-x-2"
+                onClick={handleLoginRedirect}
+              >
+                <User className="h-4 w-4" />
+                <span>Admin</span>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -175,13 +181,29 @@ const Header = () => {
               </button>
               <div className="px-4 pt-4">
                 <div className="w-full">
-                  <LoginDialog
-                    onLogin={handleLogin}
-                    onRegister={handleRegister}
-                    isLoggedIn={isLoggedIn}
-                    onLogout={handleLogout}
-                    adminName={currentUser}
-                  />
+                  {user ? (
+                    <div className="space-y-2">
+                      <span className="text-sm text-muted-foreground block">
+                        {user.email}
+                      </span>
+                      <Button variant="outline" size="sm" onClick={handleAdminRedirect} className="w-full">
+                        Painel Admin
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={signOut} className="w-full">
+                        Sair
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full flex items-center justify-center space-x-2"
+                      onClick={handleLoginRedirect}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Admin</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             </nav>
