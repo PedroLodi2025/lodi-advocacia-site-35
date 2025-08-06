@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, User } from "lucide-react";
+import { Menu, X, ChevronDown, Settings, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import logoPath from "@assets/Logo PedroLodi 2025 reduzida sem fundo_1754521524712.png";
 // Logo will be referenced directly from public folder
 
 const Header = () => {
@@ -45,12 +46,12 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <img 
-              src="/lodi-logo-transparent.png" 
+              src={logoPath} 
               alt="Lodi Advocacia" 
               className="h-12 w-auto"
             />
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-primary">Pedro H.M. Lodi</h1>
+              <h1 className="text-xl font-bold text-primary">Dr. Pedro H.M. Lodi</h1>
               <p className="text-xs text-muted-foreground">OAB/SP 210.428</p>
             </div>
           </div>
@@ -107,10 +108,10 @@ const Header = () => {
             </button>
           </nav>
 
-          {/* Admin Login */}
-          <div className="hidden lg:flex items-center space-x-4">
+          {/* Admin Access Button */}
+          <div className="flex items-center">
             {user ? (
-              <div className="flex items-center space-x-2">
+              <div className="hidden lg:flex items-center space-x-2 mr-4">
                 <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>
@@ -121,26 +122,27 @@ const Header = () => {
                   Sair
                 </Button>
               </div>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center space-x-2"
-                onClick={handleLoginRedirect}
-              >
-                <User className="h-4 w-4" />
-                <span>Admin</span>
-              </Button>
-            )}
+            ) : null}
+            
+            {/* Settings Gear Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAdminRedirect}
+              className="p-2 hover:bg-accent"
+              title="Acesso Administrativo"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden ml-2 p-2 text-foreground hover:text-primary transition-colors"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
 
         {/* Mobile Menu */}
