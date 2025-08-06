@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { apiRequest } from '@/lib/queryClient';
 import { ChevronRight } from 'lucide-react';
+import type { Article } from '@shared/schema';
 
-interface Article {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  button_text: string;
-  url: string;
-}
+
 
 const ArticlesList = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -33,17 +26,8 @@ const ArticlesList = () => {
 
   const loadArticles = async () => {
     try {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(6);
-
-      if (error) {
-        console.error('Error loading articles:', error);
-      } else {
-        setArticles(data || []);
-      }
+      const articles = await apiRequest('/api/articles?limit=6');
+      setArticles(articles);
     } catch (err) {
       console.error('Error loading articles:', err);
     } finally {

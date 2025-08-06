@@ -1,11 +1,17 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import type { User } from '@shared/schema';
+
+interface AuthUser {
+  id: string;
+  email: string;
+  username: string;
+  role: string;
+}
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
@@ -15,94 +21,93 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check for existing session on app load
+    checkAuthStatus();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiRequest('/api/auth/me');
+      setUser(response.user);
+    } catch (error) {
+      // User not authenticated, which is fine
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (error) {
-      toast({
-        title: "Erro no login",
-        description: error.message,
-        variant: "destructive",
+  const signIn = async (email: string, password: string) => {
+    try {
+      const response = await apiRequest('/api/auth/signin', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
       });
-    } else {
+      
+      setUser(response.user);
       toast({
         title: "Login realizado",
         description: "Bem-vindo de volta!",
       });
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || "Erro no login";
+      toast({
+        title: "Erro no login",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error };
     }
-
-    return { error };
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          username: username
-        }
-      }
-    });
-
-    if (error) {
-      toast({
-        title: "Erro no cadastro",
-        description: error.message,
-        variant: "destructive",
+    try {
+      const response = await apiRequest('/api/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, username }),
       });
-    } else {
+      
+      setUser(response.user);
       toast({
         title: "Cadastro realizado",
-        description: "Verifique seu email para confirmar a conta.",
+        description: "Conta criada com sucesso!",
       });
+      return { error: null };
+    } catch (error: any) {
+      const errorMessage = error.message || "Erro no cadastro";
+      toast({
+        title: "Erro no cadastro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error };
     }
-
-    return { error };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logout realizado",
-      description: "Até logo!",
-    });
+    try {
+      await apiRequest('/api/auth/signout', {
+        method: 'POST',
+      });
+      setUser(null);
+      toast({
+        title: "Logout realizado",
+        description: "Até logo!",
+      });
+    } catch (error) {
+      // Even if the API call fails, clear local state
+      setUser(null);
+    }
   };
 
   const value = {
     user,
-    session,
     loading,
     signIn,
     signUp,

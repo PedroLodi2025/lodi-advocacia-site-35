@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 // Logo will be referenced directly from public folder
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
 
   const services = [
     { name: "Direito Bancário", url: "https://bancos.lodiadvocacia.com.br" },
@@ -27,14 +27,14 @@ const Header = () => {
   };
 
   const handleLoginRedirect = () => {
-    navigate('/auth');
+    setLocation('/auth');
   };
 
   const handleAdminRedirect = () => {
     if (user) {
-      navigate('/admin');
+      setLocation('/admin');
     } else {
-      navigate('/auth');
+      setLocation('/auth');
     }
   };
 

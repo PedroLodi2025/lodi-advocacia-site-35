@@ -1,0 +1,177 @@
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
+import session from "express-session";
+import { storage } from "./storage";
+import { insertUserSchema, insertArticleSchema, type User } from "@shared/schema";
+import { z } from "zod";
+import { fromError } from "zod-validation-error";
+
+// Extend session data
+declare module "express-session" {
+  interface SessionData {
+    user?: User;
+  }
+}
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Auth middleware
+  const requireAuth = (req: Request, res: Response, next: Function) => {
+    if (!req.session.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    next();
+  };
+
+  // Auth routes
+  app.post("/api/auth/signin", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+      }
+
+      const user = await storage.authenticateUser(email, password);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      req.session.user = user;
+      res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+    } catch (error) {
+      res.status(500).json({ error: "Authentication failed" });
+    }
+  });
+
+  app.post("/api/auth/signup", async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(409).json({ error: "User already exists" });
+      }
+
+      const user = await storage.createUser(validatedData);
+      req.session.user = user;
+      res.status(201).json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromError(error).toString() });
+      }
+      res.status(500).json({ error: "User creation failed" });
+    }
+  });
+
+  app.post("/api/auth/signout", (req: Request, res: Response) => {
+    req.session.destroy(() => {
+      res.json({ message: "Signed out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", (req: Request, res: Response) => {
+    if (req.session.user) {
+      const { password, ...userWithoutPassword } = req.session.user;
+      res.json({ user: userWithoutPassword });
+    } else {
+      res.status(401).json({ error: "Not authenticated" });
+    }
+  });
+
+  // Article routes
+  app.get("/api/articles", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const articles = await storage.getArticles(limit);
+      res.json(articles);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch articles" });
+    }
+  });
+
+  app.get("/api/articles/:id", async (req: Request, res: Response) => {
+    try {
+      const article = await storage.getArticleById(req.params.id);
+      if (!article) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      res.json(article);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch article" });
+    }
+  });
+
+  app.post("/api/articles", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertArticleSchema.parse({
+        ...req.body,
+        user_id: req.session.user!.id
+      });
+      
+      const article = await storage.createArticle(validatedData);
+      res.status(201).json(article);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromError(error).toString() });
+      }
+      res.status(500).json({ error: "Failed to create article" });
+    }
+  });
+
+  app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const updateData = insertArticleSchema.partial().parse(req.body);
+      const article = await storage.updateArticle(req.params.id, updateData);
+      
+      if (!article) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      
+      res.json(article);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromError(error).toString() });
+      }
+      res.status(500).json({ error: "Failed to update article" });
+    }
+  });
+
+  app.delete("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const success = await storage.deleteArticle(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      res.json({ message: "Article deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+
+  // Users/profiles route for admin
+  app.get("/api/users", requireAuth, async (req: Request, res: Response) => {
+    try {
+      // This is a simplified implementation - in a real app you'd want pagination
+      // For now, just return empty array since we don't have a way to list all users
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}

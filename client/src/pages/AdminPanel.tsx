@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Redirect } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,19 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { Plus, Edit, Trash2, Users, FileText, LogOut } from 'lucide-react';
-
-interface Article {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  button_text: string;
-  url: string;
-}
+import type { Article } from '@shared/schema';
 
 interface Profile {
   id: string;
@@ -47,7 +38,7 @@ const AdminPanel = () => {
 
   // Redirect if not authenticated
   if (!loading && !user) {
-    return <Navigate to="/" replace />;
+    return <Redirect to="/" />;
   }
 
   // Loading state
@@ -79,54 +70,42 @@ const AdminPanel = () => {
 
   const loadArticles = async () => {
     setIsLoadingData(true);
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+    try {
+      const articles = await apiRequest('/api/articles');
+      setArticles(articles);
+    } catch (error) {
       toast({
         title: "Erro",
         description: "Erro ao carregar artigos",
         variant: "destructive"
       });
-    } else {
-      setArticles(data || []);
+    } finally {
+      setIsLoadingData(false);
     }
-    setIsLoadingData(false);
   };
 
   const loadProfiles = async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+    try {
+      const users = await apiRequest('/api/users');
+      setProfiles(users);
+    } catch (error) {
       toast({
         title: "Erro",
         description: "Erro ao carregar usuários",
         variant: "destructive"
       });
-    } else {
-      setProfiles(data || []);
     }
   };
 
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { error } = await supabase
-      .from('articles')
-      .insert([{ ...newArticle, user_id: user!.id }]);
-
-    if (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao criar artigo",
-        variant: "destructive"
+    try {
+      await apiRequest('/api/articles', {
+        method: 'POST',
+        body: JSON.stringify(newArticle),
       });
-    } else {
+
       toast({
         title: "Sucesso",
         description: "Artigo criado com sucesso!"
@@ -139,6 +118,12 @@ const AdminPanel = () => {
         url: ''
       });
       loadArticles();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao criar artigo",
+        variant: "destructive"
+      });
     }
   };
 
@@ -146,53 +131,52 @@ const AdminPanel = () => {
     e.preventDefault();
     if (!editingArticle) return;
 
-    const { error } = await supabase
-      .from('articles')
-      .update({
-        title: editingArticle.title,
-        description: editingArticle.description,
-        category: editingArticle.category,
-        button_text: editingArticle.button_text,
-        url: editingArticle.url
-      })
-      .eq('id', editingArticle.id);
-
-    if (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar artigo",
-        variant: "destructive"
+    try {
+      await apiRequest(`/api/articles/${editingArticle.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: editingArticle.title,
+          description: editingArticle.description,
+          category: editingArticle.category,
+          button_text: editingArticle.button_text,
+          url: editingArticle.url
+        }),
       });
-    } else {
+
       toast({
         title: "Sucesso",
         description: "Artigo atualizado com sucesso!"
       });
       setEditingArticle(null);
       loadArticles();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao atualizar artigo",
+        variant: "destructive"
+      });
     }
   };
 
   const handleDeleteArticle = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este artigo?')) return;
 
-    const { error } = await supabase
-      .from('articles')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir artigo",
-        variant: "destructive"
+    try {
+      await apiRequest(`/api/articles/${id}`, {
+        method: 'DELETE',
       });
-    } else {
+
       toast({
         title: "Sucesso",
         description: "Artigo excluído com sucesso!"
       });
       loadArticles();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir artigo",
+        variant: "destructive"
+      });
     }
   };
 
@@ -373,7 +357,7 @@ const AdminPanel = () => {
                               <div className="space-y-2">
                                 <Label>Texto do Botão</Label>
                                 <Input
-                                  value={editingArticle.button_text}
+                                  value={editingArticle.button_text || ''}
                                   onChange={(e) => setEditingArticle({...editingArticle, button_text: e.target.value})}
                                   required
                                 />
@@ -382,7 +366,7 @@ const AdminPanel = () => {
                                 <Label>URL (opcional)</Label>
                                 <Input
                                   type="url"
-                                  value={editingArticle.url}
+                                  value={editingArticle.url || ''}
                                   onChange={(e) => setEditingArticle({...editingArticle, url: e.target.value})}
                                   placeholder="https://..."
                                 />

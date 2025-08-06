@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Redirect } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +34,7 @@ const Auth = () => {
   }, [user, loading]);
 
   if (!loading && user) {
-    return <Navigate to="/admin" replace />;
+    return <Redirect to="/admin" />;
   }
 
   if (loading) {
