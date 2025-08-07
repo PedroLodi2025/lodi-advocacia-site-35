@@ -43,15 +43,15 @@ const Hero = () => {
               <Button 
                 variant="destructive" 
                 size="lg" 
-                className="text-base font-semibold"
+                className="text-base font-semibold bg-red-600 hover:bg-red-700 text-white"
                 onClick={scrollToContact}
               >
-                🔴 Fale com o Advogado
+                🔴 Fale com um Advogado
               </Button>
               <Button 
                 variant="success" 
                 size="lg" 
-                className="text-base font-semibold"
+                className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
                 onClick={() => window.open("https://chatvolt.ai/@assistentelodi", "_blank")}
               >
                 🟢 Atendimento Online
