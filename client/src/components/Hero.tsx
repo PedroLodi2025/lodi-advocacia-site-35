@@ -41,18 +41,18 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button 
-                variant="destructive" 
                 size="lg" 
-                className="text-base font-semibold bg-red-600 hover:bg-red-700 text-white"
+                className="text-base font-semibold bg-red-600 hover:bg-red-700 text-white cursor-pointer"
                 onClick={scrollToContact}
+                type="button"
               >
                 🔴 Fale com um Advogado
               </Button>
               <Button 
-                variant="success" 
                 size="lg" 
-                className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white"
+                className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white cursor-pointer"
                 onClick={() => window.open("https://chatvolt.ai/@assistentelodi", "_blank")}
+                type="button"
               >
                 🟢 Atendimento Online
               </Button>

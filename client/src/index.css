@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Garantir que botões sejam clicáveis */
+button {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
