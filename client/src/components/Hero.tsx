@@ -3,9 +3,13 @@ import { Play } from "lucide-react";
 
 const Hero = () => {
   const scrollToContact = () => {
+    console.log("Botão 'Fale com um Advogado' clicado");
     const element = document.getElementById("contact");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+      console.log("Navegando para seção de contato");
+    } else {
+      console.error("Elemento #contact não encontrado");
     }
   };
 
@@ -39,20 +43,25 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start relative z-10">
               <Button 
                 size="lg" 
-                className="text-base font-semibold bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                className="text-base font-semibold bg-red-600 hover:bg-red-700 text-white cursor-pointer shadow-lg border-none relative z-20"
                 onClick={scrollToContact}
                 type="button"
+                style={{ pointerEvents: 'auto' }}
               >
                 🔴 Fale com um Advogado
               </Button>
               <Button 
                 size="lg" 
-                className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white cursor-pointer"
-                onClick={() => window.open("https://chatvolt.ai/@assistentelodi", "_blank")}
+                className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white cursor-pointer shadow-lg border-none relative z-20"
+                onClick={() => {
+                  console.log("Botão Atendimento Online clicado");
+                  window.open("https://chatvolt.ai/@assistentelodi", "_blank");
+                }}
                 type="button"
+                style={{ pointerEvents: 'auto' }}
               >
                 🟢 Atendimento Online
               </Button>
