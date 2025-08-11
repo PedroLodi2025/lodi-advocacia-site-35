@@ -6,6 +6,7 @@ import HowItWorks from "@/components/HowItWorks";
 import Rights from "@/components/Rights";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import InstitutionalVideo from "@/components/InstitutionalVideo";
 
 const Index = () => {
   return (
@@ -13,6 +14,7 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
+        <InstitutionalVideo />
         <Experience />
         <ArticlesList />
         <HowItWorks />

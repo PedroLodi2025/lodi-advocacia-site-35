@@ -73,14 +73,21 @@ const Header = () => {
             <div 
               className="relative group"
               onMouseEnter={() => setIsServicesOpen(true)}
-              onMouseLeave={() => setIsServicesOpen(false)}
+              onMouseLeave={() => {
+                // Adicionar delay para permitir que o usuário mova o mouse para o submenu
+                setTimeout(() => setIsServicesOpen(false), 300);
+              }}
             >
               <button className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
                 <span>Serviços</span>
                 <ChevronDown className="h-4 w-4" />
               </button>
               {isServicesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-background border border-border rounded-lg shadow-lg py-2 z-[60]">
+                <div 
+                  className="absolute top-full left-0 mt-1 w-64 bg-background border border-border rounded-lg shadow-lg py-2 z-[60]"
+                  onMouseEnter={() => setIsServicesOpen(true)}
+                  onMouseLeave={() => setIsServicesOpen(false)}
+                >
                   {services.map((service) => (
                     <a
                       key={service.name}
