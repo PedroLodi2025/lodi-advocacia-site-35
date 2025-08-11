@@ -89,35 +89,23 @@ const Hero = () => {
           {/* Video Section */}
           <div className="relative">
             <div className="relative bg-card rounded-2xl p-6 shadow-2xl border border-border">
-              <div className="aspect-video bg-muted rounded-xl flex items-center justify-center relative overflow-hidden">
-                {/* Placeholder for video - replace with actual YouTube embed */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10" />
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="relative z-10 bg-background/80 backdrop-blur-sm"
-                >
-                  <Play className="h-6 w-6 mr-2" />
-                  Conheça o Dr. Pedro Lodi
-                </Button>
-                
-                {/* YouTube embed - replace with actual video URL */}
-                {/* <iframe
+              <div className="aspect-video bg-muted rounded-xl relative overflow-hidden">
+                <iframe
                   className="absolute inset-0 w-full h-full rounded-xl"
-                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-                  title="Apresentação Dr. Pedro Lodi"
+                  src="https://www.youtube.com/embed/qYafoUPdklQ?si=4hhwuMAHU2xtLSIg"
+                  title="Vídeo Institucional - Lodi Advocacia"
                   frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                /> */}
+                />
               </div>
               
               <div className="mt-4 text-center">
                 <h3 className="text-lg font-semibold text-card-foreground">
-                  Dr. Pedro Henrique M. Lodi
+                  Conheça o Dr. Pedro Lodi
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Advogado especialista - OAB/SP 210.428
+                  Vídeo institucional - OAB/SP 210.428
                 </p>
               </div>
             </div>
