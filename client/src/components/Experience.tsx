@@ -62,21 +62,21 @@ const Experience = () => {
         <div className="mt-20 bg-card rounded-2xl p-8 lg:p-12 shadow-xl border border-border">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold text-primary">10+</div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary">20+</div>
               <div className="text-sm uppercase tracking-wide text-muted-foreground">Anos de Experiência</div>
               <p className="text-sm text-muted-foreground">
                 Mais de uma década defendendo os direitos dos cidadãos
               </p>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold text-primary">500+</div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary">Inúmeros</div>
               <div className="text-sm uppercase tracking-wide text-muted-foreground">Casos Atendidos</div>
               <p className="text-sm text-muted-foreground">
                 Centenas de famílias e empresas assistidas com sucesso
               </p>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl lg:text-5xl font-bold text-primary">95%</div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary">Alta</div>
               <div className="text-sm uppercase tracking-wide text-muted-foreground">Taxa de Sucesso</div>
               <p className="text-sm text-muted-foreground">
                 Excelência comprovada na resolução de casos

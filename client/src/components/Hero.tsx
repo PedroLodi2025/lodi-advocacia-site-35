@@ -70,12 +70,12 @@ const Hero = () => {
             {/* Social proof */}
             <div className="flex items-center justify-center lg:justify-start space-x-6 pt-8">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">10+</div>
+                <div className="text-2xl font-bold text-primary">+20</div>
                 <div className="text-sm text-muted-foreground">Anos de Experiência</div>
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">500+</div>
+                <div className="text-2xl font-bold text-primary">Inúmeros</div>
                 <div className="text-sm text-muted-foreground">Casos Atendidos</div>
               </div>
               <div className="w-px h-12 bg-border" />
