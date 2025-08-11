@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Plus, Edit, Trash2, Users, FileText, LogOut } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, FileText, LogOut, Upload } from 'lucide-react';
 import type { Article } from '@shared/schema';
 
 interface Profile {
@@ -35,6 +35,9 @@ const AdminPanel = () => {
     button_text: 'Saiba mais',
     url: ''
   });
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Redirect if not authenticated
   if (!loading && !user) {
@@ -97,19 +100,43 @@ const AdminPanel = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const formData = new FormData();
+      formData.append('title', newArticle.title);
+      formData.append('description', newArticle.description);
+      formData.append('category', newArticle.category);
+      formData.append('button_text', newArticle.button_text);
+      formData.append('url', newArticle.url);
+      
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
       await apiRequest('/api/articles', {
         method: 'POST',
-        body: JSON.stringify(newArticle),
+        body: formData,
       });
 
       toast({
         title: "Sucesso",
         description: "Artigo criado com sucesso!"
       });
+      
       setNewArticle({
         title: '',
         description: '',
@@ -117,6 +144,10 @@ const AdminPanel = () => {
         button_text: 'Saiba mais',
         url: ''
       });
+      
+      setSelectedImage(null);
+      setImagePreview(null);
+      
       loadArticles();
     } catch (error: any) {
       toast({
@@ -293,6 +324,38 @@ const AdminPanel = () => {
                       />
                     </div>
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Imagem do Artigo (opcional)</Label>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="cursor-pointer"
+                    />
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="max-w-xs max-h-48 rounded-lg border border-border object-cover"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setImagePreview(null);
+                          }}
+                        >
+                          Remover Imagem
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   <Button type="submit" className="w-full md:w-auto">
                     Criar Artigo
                   </Button>
@@ -406,6 +469,15 @@ const AdminPanel = () => {
                               </div>
                             </div>
                             <p className="text-muted-foreground mb-2">{article.description}</p>
+                            {article.image_url && (
+                              <div className="mb-3">
+                                <img 
+                                  src={article.image_url} 
+                                  alt={article.title}
+                                  className="max-w-xs max-h-32 rounded-lg border border-border object-cover"
+                                />
+                              </div>
+                            )}
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                               <span>Data: {new Date(article.date).toLocaleDateString('pt-BR')}</span>
                               <span>Botão: "{article.button_text}"</span>

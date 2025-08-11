@@ -1,6 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { insertUserSchema, insertArticleSchema, type User } from "@shared/schema";
 import { z } from "zod";
@@ -14,6 +17,33 @@ declare module "express-session" {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup file upload directory
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: uploadsDir,
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'article-' + uniqueSuffix + path.extname(file.originalname));
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Apenas imagens são permitidas!'), false);
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+  });
+
   // Setup session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
@@ -45,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = await storage.authenticateUser(email, password);
       if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Área Exclusiva para Administradores do Sistema" });
       }
 
       req.session.user = user;
@@ -55,25 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/signup", async (req: Request, res: Response) => {
-    try {
-      const validatedData = insertUserSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(validatedData.email);
-      if (existingUser) {
-        return res.status(409).json({ error: "User already exists" });
-      }
-
-      const user = await storage.createUser(validatedData);
-      req.session.user = user;
-      res.status(201).json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: fromError(error).toString() });
-      }
-      res.status(500).json({ error: "User creation failed" });
-    }
+  // Signup route disabled - admin-only access
+  app.post("/api/auth/signup", (req: Request, res: Response) => {
+    res.status(403).json({ error: "Área Exclusiva para Administradores do Sistema" });
   });
 
   app.post("/api/auth/signout", (req: Request, res: Response) => {
@@ -114,12 +128,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/articles", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
     try {
-      const validatedData = insertArticleSchema.parse({
+      const articleData = {
         ...req.body,
-        user_id: req.session.user!.id
-      });
+        user_id: req.session.user!.id,
+        image_url: req.file ? `/uploads/${req.file.filename}` : null
+      };
+
+      const validatedData = insertArticleSchema.parse(articleData);
       
       const article = await storage.createArticle(validatedData);
       res.status(201).json(article);
