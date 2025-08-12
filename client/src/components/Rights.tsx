@@ -114,7 +114,7 @@ const Rights = () => {
               </button>
               <button 
                 onClick={() => window.open("https://chatvolt.ai/@assistentelodi", "_blank")}
-                className="bg-success text-success-foreground hover:bg-success/90 px-8 py-3 rounded-lg font-semibold transition-colors shadow-lg"
+                className="text-success-foreground hover:bg-success/90 px-8 py-3 rounded-lg font-semibold transition-colors shadow-lg bg-[#1a9830]"
               >
                 Orientação Online
               </button>
