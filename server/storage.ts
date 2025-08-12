@@ -117,20 +117,24 @@ export class MemStorage implements IStorage {
 // Initialize storage with default admin user
 export const storage = new MemStorage();
 
-// Create default admin user for the system
+// Create default admin user for the system - using immediate async call
 (async () => {
   try {
-    // Check if admin user already exists
     const existingAdmin = await storage.getUserByEmail("pedro.lodi.adv@gmail.com");
+    console.log(`Checking for existing admin: ${existingAdmin ? 'Found' : 'Not found'}`);
+    
     if (!existingAdmin) {
       // Create default admin user with the correct credentials
-      await storage.createUser({
+      const newAdmin = await storage.createUser({
         email: "pedro.lodi.adv@gmail.com",
         password: "ph230570", // This will be hashed by bcrypt
         username: "Pedro Lodi",
         role: "admin"
       });
       console.log("✓ Default admin user created: pedro.lodi.adv@gmail.com / ph230570");
+      console.log("Admin user details:", { id: newAdmin.id, email: newAdmin.email, role: newAdmin.role });
+    } else {
+      console.log("✓ Admin user already exists: pedro.lodi.adv@gmail.com");
     }
   } catch (error) {
     console.error("Error creating default admin user:", error);

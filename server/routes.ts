@@ -69,11 +69,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
+      console.log(`Login attempt for email: ${email}`);
+      
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password required" });
       }
 
+      // First check if user exists
+      const existingUser = await storage.getUserByEmail(email);
+      console.log(`User found: ${existingUser ? 'Yes' : 'No'}`);
+      
       const user = await storage.authenticateUser(email, password);
+      console.log(`Authentication result: ${user ? 'Success' : 'Failed'}`);
+      
       if (!user) {
         return res.status(401).json({ error: "Área Exclusiva para Administradores do Sistema" });
       }
@@ -81,6 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.user = user;
       res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
     } catch (error) {
+      console.error("Authentication error:", error);
       res.status(500).json({ error: "Authentication failed" });
     }
   });

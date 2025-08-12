@@ -79,25 +79,29 @@ const Header = () => {
                 <span>Serviços</span>
                 <ChevronDown className="h-4 w-4" />
               </button>
-              {isServicesOpen && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-background border border-border rounded-lg shadow-lg py-2 z-[60]"
-                  onMouseEnter={() => setIsServicesOpen(true)}
-                  onMouseLeave={() => setIsServicesOpen(false)}
-                >
-                  {services.map((service) => (
-                    <a
-                      key={service.name}
-                      href={service.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-4 py-3 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                    >
-                      {service.name}
-                    </a>
-                  ))}
-                </div>
-              )}
+              <div 
+                className={`absolute top-full left-0 mt-1 w-64 bg-background border border-border rounded-lg shadow-lg py-2 z-[60] transition-all duration-200 ${
+                  isServicesOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+                onMouseEnter={() => setIsServicesOpen(true)}
+                onMouseLeave={() => setIsServicesOpen(false)}
+              >
+                {services.map((service) => (
+                  <a
+                    key={service.name}
+                    href={service.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-4 py-3 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.open(service.url, '_blank', 'noopener,noreferrer');
+                    }}
+                  >
+                    {service.name}
+                  </a>
+                ))}
+              </div>
             </div>
             <button 
               onClick={() => scrollToSection("contact")}
