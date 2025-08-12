@@ -34,7 +34,9 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
 ## Recent Changes
 - **2025-08-12**: Successfully migrated from Replit Agent to Replit environment
   - Fixed all TypeScript errors and database connection issues
-  - Set up secure in-memory storage with proper authentication
+  - **CRITICAL FIX**: Replaced in-memory storage with PostgreSQL database for data persistence
+  - Created PostgreSQL database with proper schema and migrations
+  - Articles and user data now persist between server restarts
   - Created admin user: pedro.lodi.adv@gmail.com / ph230570
   - Fixed services menu hover behavior for better usability
   - Fixed AdminPanel hooks error preventing logout functionality
@@ -46,6 +48,7 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - **FIXED**: Session-based authentication issues by implementing hybrid token + session system
   - **FIXED**: Image upload and serving functionality with proper MIME types
   - **FIXED**: Image display proportions to prevent cropping in article cards
+  - **FIXED**: Data persistence issue - articles now save permanently to PostgreSQL database
 - **2025-08-11**: Updated statistics display
   - Changed "10+" to "+20 Anos" in Hero section
   - Changed "500+" to "Inúmeros Casos" in Hero section  
@@ -64,7 +67,14 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - Added image preview in admin panel
   - Images displayed in article listings
 
+## Current Status
+- ✅ PostgreSQL database configured and working
+- ✅ Admin user created and authentication working
+- ✅ Data persistence implemented - articles save permanently
+- ✅ Image upload functionality working
+- ✅ Application ready for production use
+
 ## Next Steps
-- Test admin login and image upload functionality
-- Project ready for deployment after testing
+- Project ready for deployment
 - Consider GitHub integration for version control
+- All core functionality working with persistent data storage

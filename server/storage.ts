@@ -1,13 +1,7 @@
-// Database imports commented out to use in-memory storage for migration
-// import { drizzle } from "drizzle-orm/neon-http";
-// import { neon } from "@neondatabase/serverless";
-// import { eq, desc } from "drizzle-orm";
+import { db } from "./db";
 import { users, articles, type User, type Article, type InsertUser, type InsertArticle } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcrypt";
-
-// Database connection commented out - using in-memory storage for migration
-// const sql = neon(process.env.DATABASE_URL!);
-// const db = drizzle(sql);
 
 export interface IStorage {
   // User methods
@@ -25,14 +19,77 @@ export interface IStorage {
   deleteArticle(id: string): Promise<boolean>;
 }
 
-// DatabaseStorage class commented out for migration - using in-memory storage
-// export class DatabaseStorage implements IStorage {
-//   async getUser(id: string): Promise<User | undefined> {
-//     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-//     return result[0];
-//   }
-//   // ... other database methods would be here
-// }
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(insertUser.password, 12);
+    const result = await db.insert(users).values({
+      ...insertUser,
+      password: hashedPassword,
+      role: insertUser.role || "user"
+    }).returning();
+    return result[0];
+  }
+
+  async authenticateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+    
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    return isValidPassword ? user : null;
+  }
+
+  async getArticles(limit?: number): Promise<Article[]> {
+    const query = db.select().from(articles).orderBy(desc(articles.created_at));
+    if (limit) {
+      return await query.limit(limit);
+    }
+    return await query;
+  }
+
+  async getArticleById(id: string): Promise<Article | undefined> {
+    const result = await db.select().from(articles).where(eq(articles.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createArticle(insertArticle: InsertArticle): Promise<Article> {
+    const result = await db.insert(articles).values({
+      ...insertArticle,
+      date: insertArticle.date || new Date().toISOString().split('T')[0],
+      button_text: insertArticle.button_text || "Saiba mais",
+      url: insertArticle.url || null,
+      image_url: insertArticle.image_url || null,
+    }).returning();
+    return result[0];
+  }
+
+  async updateArticle(id: string, updateData: Partial<InsertArticle>): Promise<Article | undefined> {
+    const result = await db.update(articles)
+      .set({ ...updateData, updated_at: new Date() })
+      .where(eq(articles.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteArticle(id: string): Promise<boolean> {
+    const result = await db.delete(articles).where(eq(articles.id, id)).returning();
+    return result.length > 0;
+  }
+}
 
 export class MemStorage implements IStorage {
   private users: Map<string, User> = new Map();
@@ -114,8 +171,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Initialize storage with default admin user
-export const storage = new MemStorage();
+// Initialize storage with PostgreSQL database
+export const storage = new DatabaseStorage();
 
 // Create default admin user for the system - using immediate async call
 (async () => {
