@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, setAuthToken, removeAuthToken } from '@/lib/queryClient';
 import type { User } from '@shared/schema';
 
 interface AuthUser {
@@ -49,6 +49,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, password }),
       });
       
+      // Save token if provided
+      if (response.token) {
+        setAuthToken(response.token);
+        console.log('Token saved to localStorage:', response.token);
+      }
+      
       setUser(response.user);
       toast({
         title: "Login realizado",
@@ -95,13 +101,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await apiRequest('/api/auth/signout', {
         method: 'POST',
       });
+      removeAuthToken(); // Clear token from localStorage
       setUser(null);
       toast({
         title: "Logout realizado",
         description: "Até logo!",
       });
     } catch (error) {
-      // Even if the API call fails, clear local state
+      // Even if the API call fails, clear local state and token
+      removeAuthToken();
       setUser(null);
     }
   };

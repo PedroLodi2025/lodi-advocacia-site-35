@@ -10,6 +10,14 @@ import { insertUserSchema, insertArticleSchema, type User } from "@shared/schema
 import { z } from "zod";
 import { fromError } from "zod-validation-error";
 
+// Simple in-memory token store for authentication
+const authenticatedUsers = new Map<string, User>();
+
+// Generate a simple token
+const generateToken = (): string => {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+};
+
 // Extend session data
 declare module "express-session" {
   interface SessionData {
@@ -76,21 +84,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware with enhanced debugging
+  // Auth middleware using token-based authentication
   const requireAuth = (req: Request, res: Response, next: any) => {
-    console.log('=== AUTH CHECK START ===');
-    console.log('Session ID:', req.sessionID);
-    console.log('Session user exists:', req.session.user ? 'YES' : 'NO');
-    console.log('Cookie header:', req.headers.cookie);
-    console.log('Session data:', JSON.stringify(req.session, null, 2));
-    console.log('=== AUTH CHECK END ===');
-    
-    if (!req.session.user) {
-      console.log('Authentication failed - no user in session');
-      return res.status(401).json({ error: "Authentication required" });
+    // Try session first (for compatibility)
+    if (req.session.user) {
+      console.log('Auth via session successful for:', req.session.user.email);
+      return next();
     }
-    console.log('Authentication successful for user:', req.session.user.email);
-    next();
+    
+    // Try token-based auth
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    
+    console.log('Auth check - Authorization header:', authHeader);
+    console.log('Auth check - Token exists:', token ? 'YES' : 'NO');
+    
+    if (token && authenticatedUsers.has(token)) {
+      const user = authenticatedUsers.get(token)!;
+      console.log('Auth via token successful for:', user.email);
+      req.session.user = user; // Also set in session for compatibility
+      return next();
+    }
+    
+    console.log('Authentication failed - no valid session or token');
+    return res.status(401).json({ error: "Authentication required" });
   };
 
   // Auth routes
@@ -115,18 +132,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Área Exclusiva para Administradores do Sistema" });
       }
 
-      req.session.user = user;
-      console.log('Session saved - Session ID:', req.sessionID);
-      console.log('Session saved - User:', user.email);
+      // Generate token for this user
+      const token = generateToken();
+      authenticatedUsers.set(token, user);
       
-      // Force session save before responding
+      // Also set in session for compatibility
+      req.session.user = user;
+      
+      console.log('User authenticated - Email:', user.email);
+      console.log('Generated token:', token);
+      
+      // Force session save and return both session and token
       req.session.save((err) => {
         if (err) {
           console.error('Session save error:', err);
-          return res.status(500).json({ error: "Session save failed" });
         }
-        console.log('Session successfully saved to store');
-        res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+        
+        res.json({ 
+          user: { id: user.id, email: user.email, username: user.username, role: user.role },
+          token: token
+        });
       });
     } catch (error) {
       console.error("Authentication error:", error);
