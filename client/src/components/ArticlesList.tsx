@@ -147,7 +147,8 @@ const ArticlesList = () => {
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
+              className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
+              onClick={() => window.open('https://chatvolt.ai/@assistentelodi', '_blank')}
             >
               Assistência Online
             </Button>

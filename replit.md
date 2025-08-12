@@ -37,6 +37,9 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - Set up secure in-memory storage with proper authentication
   - Created admin user: pedro.lodi.adv@gmail.com / ph230570
   - Fixed services menu hover behavior for better usability
+  - Fixed AdminPanel hooks error preventing logout functionality
+  - Changed "Assistência Online" button to link to chat online (chatvolt.ai/@assistentelodi) instead of WhatsApp
+  - Created comprehensive .gitignore and README.md files
   - Application now running properly on port 5000
 - **2025-08-11**: Updated statistics display
   - Changed "10+" to "+20 Anos" in Hero section
