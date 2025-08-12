@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
-  // Configure multer for file uploads
+  // Configure multer for file uploads with enhanced error handling
   const upload = multer({
     storage: multer.diskStorage({
       destination: uploadsDir,
@@ -36,11 +36,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
-        cb(null, false);
+        const error = new Error('Apenas arquivos de imagem são permitidos');
+        cb(error);
       }
     },
     limits: {
-      fileSize: 5 * 1024 * 1024 // 5MB limit
+      fileSize: 10 * 1024 * 1024 // 10MB limit
     }
   });
 
@@ -137,24 +138,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
-    try {
-      const articleData = {
-        ...req.body,
-        user_id: req.session.user!.id,
-        image_url: req.file ? `/uploads/${req.file.filename}` : null
-      };
-
-      const validatedData = insertArticleSchema.parse(articleData);
-      
-      const article = await storage.createArticle(validatedData);
-      res.status(201).json(article);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: fromError(error).toString() });
+  app.post("/api/articles", requireAuth, (req: Request, res: Response) => {
+    upload.single('image')(req, res, async (err) => {
+      if (err) {
+        console.error('Upload error:', err);
+        return res.status(400).json({ error: err.message || 'Erro no upload da imagem' });
       }
-      res.status(500).json({ error: "Failed to create article" });
-    }
+
+      try {
+        console.log('Request body:', req.body);
+        console.log('File:', req.file);
+
+        const articleData = {
+          title: req.body.title,
+          description: req.body.description,
+          category: req.body.category,
+          button_text: req.body.button_text || 'Saiba mais',
+          url: req.body.url || '',
+          user_id: req.session.user!.id,
+          image_url: req.file ? `/uploads/${req.file.filename}` : null
+        };
+
+        const validatedData = insertArticleSchema.parse(articleData);
+        
+        const article = await storage.createArticle(validatedData);
+        res.status(201).json(article);
+      } catch (error) {
+        console.error('Article creation error:', error);
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ error: fromError(error).toString() });
+        }
+        res.status(500).json({ error: "Falha ao criar artigo" });
+      }
+    });
   });
 
   app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {

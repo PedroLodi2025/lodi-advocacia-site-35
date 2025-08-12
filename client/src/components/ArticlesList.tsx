@@ -135,7 +135,7 @@ const ArticlesList = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              className="bg-[#ab1c09e6] text-[#f2f4f7]"
+              className="bg-[#ab1c09e6] text-[#f2f4f7] hover:bg-primary/90 shadow-lg hover:shadow-xl"
               onClick={() => {
                 const contactSection = document.getElementById('contact');
                 if (contactSection) {
