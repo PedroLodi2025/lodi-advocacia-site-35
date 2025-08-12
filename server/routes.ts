@@ -143,12 +143,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Request body:', req.body);
       console.log('File:', req.file);
 
+      // Validate required fields
+      if (!req.body.title || !req.body.description || !req.body.category) {
+        return res.status(400).json({ error: 'Título, descrição e categoria são obrigatórios' });
+      }
+
       const articleData = {
-        title: req.body.title,
-        description: req.body.description,
+        title: req.body.title.trim(),
+        description: req.body.description.trim(),
         category: req.body.category,
-        button_text: req.body.button_text || 'Saiba mais',
-        url: req.body.url || '',
+        button_text: req.body.button_text?.trim() || 'Saiba mais',
+        url: req.body.url?.trim() || '',
         user_id: req.session.user!.id,
         image_url: req.file ? `/uploads/${req.file.filename}` : null
       };
