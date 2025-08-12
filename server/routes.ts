@@ -65,6 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // JSON middleware for auth routes
+  app.use(["/api/auth/signin", "/api/auth/signup"], express.json());
+
   // Auth routes
   app.post("/api/auth/signin", async (req: Request, res: Response) => {
     try {
@@ -171,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {
+  app.put("/api/articles/:id", requireAuth, express.json(), async (req: Request, res: Response) => {
     try {
       const updateData = insertArticleSchema.partial().parse(req.body);
       const article = await storage.updateArticle(req.params.id, updateData);

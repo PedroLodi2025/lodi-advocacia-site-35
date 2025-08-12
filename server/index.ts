@@ -6,15 +6,6 @@ const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 
-// Conditional JSON parsing - skip for multipart/form-data
-app.use((req, res, next) => {
-  if (req.headers['content-type']?.includes('multipart/form-data')) {
-    // Skip JSON parsing for file uploads
-    return next();
-  }
-  express.json()(req, res, next);
-});
-
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
