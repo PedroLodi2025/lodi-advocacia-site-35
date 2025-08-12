@@ -36,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
-        cb(new Error('Apenas imagens são permitidas!'), false);
+        cb(null, false);
       }
     },
     limits: {

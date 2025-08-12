@@ -1,11 +1,13 @@
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
-import { eq, desc } from "drizzle-orm";
+// Database imports commented out to use in-memory storage for migration
+// import { drizzle } from "drizzle-orm/neon-http";
+// import { neon } from "@neondatabase/serverless";
+// import { eq, desc } from "drizzle-orm";
 import { users, articles, type User, type Article, type InsertUser, type InsertArticle } from "@shared/schema";
 import bcrypt from "bcrypt";
 
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
+// Database connection commented out - using in-memory storage for migration
+// const sql = neon(process.env.DATABASE_URL!);
+// const db = drizzle(sql);
 
 export interface IStorage {
   // User methods
@@ -23,69 +25,14 @@ export interface IStorage {
   deleteArticle(id: string): Promise<boolean>;
 }
 
-export class DatabaseStorage implements IStorage {
-  async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
-  }
-
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    return result[0];
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const hashedPassword = await bcrypt.hash(insertUser.password, 12);
-    const result = await db.insert(users).values({
-      ...insertUser,
-      password: hashedPassword,
-    }).returning();
-    return result[0];
-  }
-
-  async authenticateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.getUserByEmail(email);
-    if (!user) return null;
-    
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    return isValidPassword ? user : null;
-  }
-
-  async getArticles(limit?: number): Promise<Article[]> {
-    if (limit) {
-      return await db.select().from(articles).orderBy(desc(articles.created_at)).limit(limit);
-    }
-    return await db.select().from(articles).orderBy(desc(articles.created_at));
-  }
-
-  async getArticleById(id: string): Promise<Article | undefined> {
-    const result = await db.select().from(articles).where(eq(articles.id, id)).limit(1);
-    return result[0];
-  }
-
-  async createArticle(article: InsertArticle): Promise<Article> {
-    const result = await db.insert(articles).values(article).returning();
-    return result[0];
-  }
-
-  async updateArticle(id: string, article: Partial<InsertArticle>): Promise<Article | undefined> {
-    const result = await db.update(articles)
-      .set({ ...article, updated_at: new Date() })
-      .where(eq(articles.id, id))
-      .returning();
-    return result[0];
-  }
-
-  async deleteArticle(id: string): Promise<boolean> {
-    const result = await db.delete(articles).where(eq(articles.id, id));
-    return result.rowCount > 0;
-  }
-}
+// DatabaseStorage class commented out for migration - using in-memory storage
+// export class DatabaseStorage implements IStorage {
+//   async getUser(id: string): Promise<User | undefined> {
+//     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+//     return result[0];
+//   }
+//   // ... other database methods would be here
+// }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User> = new Map();
@@ -140,6 +87,7 @@ export class MemStorage implements IStorage {
       date: insertArticle.date || new Date().toISOString().split('T')[0],
       button_text: insertArticle.button_text || "Saiba mais",
       url: insertArticle.url || null,
+      image_url: insertArticle.image_url || null,
       id: crypto.randomUUID(),
       created_at: new Date(),
       updated_at: new Date(),
@@ -166,4 +114,25 @@ export class MemStorage implements IStorage {
   }
 }
 
+// Initialize storage with default admin user
 export const storage = new MemStorage();
+
+// Create default admin user for the system
+(async () => {
+  try {
+    // Check if admin user already exists
+    const existingAdmin = await storage.getUserByEmail("admin@lodiadv.com");
+    if (!existingAdmin) {
+      // Create default admin user
+      await storage.createUser({
+        email: "admin@lodiadv.com",
+        password: "admin123", // This will be hashed by bcrypt
+        username: "admin",
+        role: "admin"
+      });
+      console.log("✓ Default admin user created: admin@lodiadv.com / admin123");
+    }
+  } catch (error) {
+    console.error("Error creating default admin user:", error);
+  }
+})();
