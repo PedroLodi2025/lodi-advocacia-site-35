@@ -261,12 +261,11 @@ const AdminPanel = () => {
     'Direito Empresarial': 'bg-gray-100 text-gray-800'
   };
 
-  // Redirect if not authenticated - moved after all hooks
+  // Handle authentication state without early returns
   if (!loading && !user) {
     return <Redirect to="/" />;
   }
 
-  // Loading state - moved after all hooks
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
