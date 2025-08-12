@@ -23,6 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
+  // Setup JSON parsing middleware BEFORE session
+  app.use(express.json());
+
   // Configure multer for file uploads with enhanced error handling
   const upload = multer({
     storage: multer.diskStorage({
@@ -59,6 +62,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth middleware
   const requireAuth = (req: Request, res: Response, next: Function) => {
+    console.log('Auth check - Session ID:', req.sessionID);
+    console.log('Auth check - Session user:', req.session.user ? 'Exists' : 'Not found');
     if (!req.session.user) {
       return res.status(401).json({ error: "Authentication required" });
     }
@@ -66,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Auth routes
-  app.post("/api/auth/signin", express.json(), async (req: Request, res: Response) => {
+  app.post("/api/auth/signin", async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
       
@@ -88,6 +93,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       req.session.user = user;
+      console.log('Session saved - Session ID:', req.sessionID);
+      console.log('Session saved - User:', user.email);
       res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
     } catch (error) {
       console.error("Authentication error:", error);
@@ -96,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Signup route disabled - admin-only access
-  app.post("/api/auth/signup", express.json(), (req: Request, res: Response) => {
+  app.post("/api/auth/signup", (req: Request, res: Response) => {
     res.status(403).json({ error: "Área Exclusiva para Administradores do Sistema" });
   });
 
@@ -171,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/articles/:id", requireAuth, express.json(), async (req: Request, res: Response) => {
+  app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const updateData = insertArticleSchema.partial().parse(req.body);
       const article = await storage.updateArticle(req.params.id, updateData);
