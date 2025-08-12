@@ -73,10 +73,7 @@ const Header = () => {
             <div 
               className="relative group"
               onMouseEnter={() => setIsServicesOpen(true)}
-              onMouseLeave={() => {
-                // Adicionar delay para permitir que o usuário mova o mouse para o submenu
-                setTimeout(() => setIsServicesOpen(false), 300);
-              }}
+              onMouseLeave={() => setIsServicesOpen(false)}
             >
               <button className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
                 <span>Serviços</span>
@@ -95,11 +92,6 @@ const Header = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block px-4 py-3 text-sm text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        window.open(service.url, '_blank');
-                        setIsServicesOpen(false);
-                      }}
                     >
                       {service.name}
                     </a>

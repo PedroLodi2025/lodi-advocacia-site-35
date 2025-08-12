@@ -121,16 +121,16 @@ export const storage = new MemStorage();
 (async () => {
   try {
     // Check if admin user already exists
-    const existingAdmin = await storage.getUserByEmail("admin@lodiadv.com");
+    const existingAdmin = await storage.getUserByEmail("pedro.lodi.adv@gmail.com");
     if (!existingAdmin) {
-      // Create default admin user
+      // Create default admin user with the correct credentials
       await storage.createUser({
-        email: "admin@lodiadv.com",
-        password: "admin123", // This will be hashed by bcrypt
-        username: "admin",
+        email: "pedro.lodi.adv@gmail.com",
+        password: "ph230570", // This will be hashed by bcrypt
+        username: "Pedro Lodi",
         role: "admin"
       });
-      console.log("✓ Default admin user created: admin@lodiadv.com / admin123");
+      console.log("✓ Default admin user created: pedro.lodi.adv@gmail.com / ph230570");
     }
   } catch (error) {
     console.error("Error creating default admin user:", error);

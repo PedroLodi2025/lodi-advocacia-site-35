@@ -32,6 +32,12 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
 - All client-side database calls moved to server routes
 
 ## Recent Changes
+- **2025-08-12**: Successfully migrated from Replit Agent to Replit environment
+  - Fixed all TypeScript errors and database connection issues
+  - Set up secure in-memory storage with proper authentication
+  - Created admin user: pedro.lodi.adv@gmail.com / ph230570
+  - Fixed services menu hover behavior for better usability
+  - Application now running properly on port 5000
 - **2025-08-11**: Updated statistics display
   - Changed "10+" to "+20 Anos" in Hero section
   - Changed "500+" to "Inúmeros Casos" in Hero section  
