@@ -65,11 +65,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // JSON middleware for auth routes
-  app.use(["/api/auth/signin", "/api/auth/signup"], express.json());
-
   // Auth routes
-  app.post("/api/auth/signin", async (req: Request, res: Response) => {
+  app.post("/api/auth/signin", express.json(), async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
       
@@ -99,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Signup route disabled - admin-only access
-  app.post("/api/auth/signup", (req: Request, res: Response) => {
+  app.post("/api/auth/signup", express.json(), (req: Request, res: Response) => {
     res.status(403).json({ error: "Área Exclusiva para Administradores do Sistema" });
   });
 
