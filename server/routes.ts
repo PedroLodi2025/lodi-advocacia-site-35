@@ -138,39 +138,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", requireAuth, (req: Request, res: Response) => {
-    upload.single('image')(req, res, async (err) => {
-      if (err) {
-        console.error('Upload error:', err);
-        return res.status(400).json({ error: err.message || 'Erro no upload da imagem' });
+  app.post("/api/articles", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      console.log('Request body:', req.body);
+      console.log('File:', req.file);
+
+      const articleData = {
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category,
+        button_text: req.body.button_text || 'Saiba mais',
+        url: req.body.url || '',
+        user_id: req.session.user!.id,
+        image_url: req.file ? `/uploads/${req.file.filename}` : null
+      };
+
+      const validatedData = insertArticleSchema.parse(articleData);
+      
+      const article = await storage.createArticle(validatedData);
+      res.status(201).json(article);
+    } catch (error) {
+      console.error('Article creation error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromError(error).toString() });
       }
-
-      try {
-        console.log('Request body:', req.body);
-        console.log('File:', req.file);
-
-        const articleData = {
-          title: req.body.title,
-          description: req.body.description,
-          category: req.body.category,
-          button_text: req.body.button_text || 'Saiba mais',
-          url: req.body.url || '',
-          user_id: req.session.user!.id,
-          image_url: req.file ? `/uploads/${req.file.filename}` : null
-        };
-
-        const validatedData = insertArticleSchema.parse(articleData);
-        
-        const article = await storage.createArticle(validatedData);
-        res.status(201).json(article);
-      } catch (error) {
-        console.error('Article creation error:', error);
-        if (error instanceof z.ZodError) {
-          return res.status(400).json({ error: fromError(error).toString() });
-        }
-        res.status(500).json({ error: "Falha ao criar artigo" });
-      }
-    });
+      res.status(500).json({ error: "Falha ao criar artigo" });
+    }
   });
 
   app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {

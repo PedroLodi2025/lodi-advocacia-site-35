@@ -3,6 +3,16 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Skip JSON parsing for multipart/form-data uploads
+app.use('/api/articles', (req, res, next) => {
+  if (req.method === 'POST' && req.headers['content-type']?.includes('multipart/form-data')) {
+    // Skip JSON parsing for file uploads
+    return next();
+  }
+  express.json()(req, res, next);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

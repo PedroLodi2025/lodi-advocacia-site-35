@@ -39,6 +39,8 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - Fixed services menu hover behavior for better usability
   - Fixed AdminPanel hooks error preventing logout functionality
   - Changed "Assistência Online" button to link to chat online (chatvolt.ai/@assistentelodi) instead of WhatsApp
+  - Fixed upload de imagens with multipart/form-data middleware configuration
+  - Implemented automatic image resize and compression (800x600px, JPEG 80% quality)
   - Created comprehensive .gitignore and README.md files
   - Application now running properly on port 5000
 - **2025-08-11**: Updated statistics display
