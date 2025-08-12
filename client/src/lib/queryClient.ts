@@ -11,11 +11,18 @@ export const queryClient = new QueryClient({
 
 // Default fetcher for TanStack Query
 export const apiRequest = async (url: string, options: RequestInit = {}) => {
+  const headers: Record<string, string> = {};
+  
+  // Only set Content-Type to application/json if we're not sending FormData
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
   const response = await fetch(url, {
     ...options,
     credentials: 'include', // Include session cookies
     headers: {
-      'Content-Type': 'application/json',
+      ...headers,
       ...options.headers,
     },
   });

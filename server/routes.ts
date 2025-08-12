@@ -23,8 +23,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
-  // Setup JSON parsing middleware BEFORE session
-  app.use(express.json());
+  // Setup JSON parsing middleware BEFORE session but after multer routes
+  // Note: We'll apply express.json() selectively to avoid conflicts with multipart uploads
 
   // Configure multer for file uploads with enhanced error handling
   const upload = multer({
@@ -48,17 +48,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup session middleware
+  // Setup session middleware with store configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Changed to true to ensure session is saved
+    saveUninitialized: true, // Changed to true to help with session creation
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax' // Added for better cross-request support
+    },
+    name: 'lodi.session' // Give the session a specific name
   }));
+
+  // Add JSON parsing middleware for specific routes that need it
+  app.use('/api/auth', express.json());
+  app.use('/api/users', express.json());
+  
+  // For PUT requests on articles (updates only)
+  app.use('/api/articles/:id', (req: Request, res: Response, next: Function) => {
+    if (req.method === 'PUT') {
+      express.json()(req, res, next);
+    } else {
+      next();
+    }
+  });
 
   // Auth middleware
   const requireAuth = (req: Request, res: Response, next: Function) => {
@@ -145,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
+  app.post("/api/articles", upload.single('image'), requireAuth, async (req: Request, res: Response) => {
     try {
       console.log('Request body:', req.body);
       console.log('File:', req.file);
