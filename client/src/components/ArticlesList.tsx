@@ -94,7 +94,7 @@ const ArticlesList = () => {
             {articles.map((article) => (
               <div key={article.id} className="bg-card rounded-xl overflow-hidden shadow-lg border border-border hover:shadow-xl transition-all duration-300 group">
                 {article.image_url && (
-                  <div className="aspect-video overflow-hidden">
+                  <div className="h-48 overflow-hidden">
                     <img 
                       src={article.image_url} 
                       alt={article.title}

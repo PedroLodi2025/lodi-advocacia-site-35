@@ -43,6 +43,9 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - Implemented automatic image resize and compression (800x600px, JPEG 80% quality)
   - Created comprehensive .gitignore and README.md files
   - Application now running properly on port 5000
+  - **FIXED**: Session-based authentication issues by implementing hybrid token + session system
+  - **FIXED**: Image upload and serving functionality with proper MIME types
+  - **FIXED**: Image display proportions to prevent cropping in article cards
 - **2025-08-11**: Updated statistics display
   - Changed "10+" to "+20 Anos" in Hero section
   - Changed "500+" to "Inúmeros Casos" in Hero section  
