@@ -504,11 +504,11 @@ const AdminPanel = () => {
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
                                 {article.image_url && (
-                                  <div className="mb-3">
+                                  <div className="mb-3 w-32 h-20 bg-gray-50 dark:bg-gray-800 rounded-lg border border-border flex items-center justify-center overflow-hidden">
                                     <img 
                                       src={article.image_url} 
                                       alt={article.title}
-                                      className="w-32 h-24 object-cover rounded-lg border border-border"
+                                      className="max-w-full max-h-full object-contain"
                                     />
                                   </div>
                                 )}

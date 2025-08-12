@@ -94,11 +94,11 @@ const ArticlesList = () => {
             {articles.map((article) => (
               <div key={article.id} className="bg-card rounded-xl overflow-hidden shadow-lg border border-border hover:shadow-xl transition-all duration-300 group">
                 {article.image_url && (
-                  <div className="h-48 overflow-hidden">
+                  <div className="h-50 overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
                     <img 
                       src={article.image_url} 
                       alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 )}

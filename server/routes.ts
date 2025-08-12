@@ -5,6 +5,7 @@ import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 import { storage } from "./storage";
 import { insertUserSchema, insertArticleSchema, type User } from "@shared/schema";
 import { z } from "zod";
@@ -31,6 +32,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+
+  // Function to resize and optimize images to 400x200 with proper aspect ratio
+  const processImage = async (filePath: string): Promise<void> => {
+    try {
+      await sharp(filePath)
+        .resize(400, 200, {
+          fit: 'inside', // Preserve aspect ratio, fit within bounds
+          withoutEnlargement: true, // Don't enlarge smaller images
+          background: { r: 255, g: 255, b: 255, alpha: 1 } // White background for transparency
+        })
+        .jpeg({ quality: 85 }) // Convert to JPEG with good quality
+        .toFile(filePath + '.processed');
+      
+      // Replace original with processed image
+      fs.unlinkSync(filePath);
+      fs.renameSync(filePath + '.processed', filePath);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      // If processing fails, keep the original image
+    }
+  };
 
   // Setup JSON parsing middleware BEFORE session but after multer routes
   // Note: We'll apply express.json() selectively to avoid conflicts with multipart uploads
@@ -212,6 +234,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Título, descrição e categoria são obrigatórios' });
       }
 
+      // Process image if uploaded
+      let imageUrl = null;
+      if (req.file) {
+        await processImage(req.file.path);
+        imageUrl = `/uploads/${req.file.filename}`;
+        console.log('Image processed and resized to 400x200:', req.file.filename);
+      }
+
       const articleData = {
         title: req.body.title.trim(),
         description: req.body.description.trim(),
@@ -219,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         button_text: req.body.button_text?.trim() || 'Saiba mais',
         url: req.body.url?.trim() || '',
         user_id: req.session.user!.id,
-        image_url: req.file ? `/uploads/${req.file.filename}` : null
+        image_url: imageUrl
       };
 
       const validatedData = insertArticleSchema.parse(articleData);
