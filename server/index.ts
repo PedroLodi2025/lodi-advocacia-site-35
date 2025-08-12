@@ -4,17 +4,16 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Skip JSON parsing for multipart/form-data uploads
-app.use('/api/articles', (req, res, next) => {
-  if (req.method === 'POST' && req.headers['content-type']?.includes('multipart/form-data')) {
+app.use(express.urlencoded({ extended: false }));
+
+// Conditional JSON parsing - skip for multipart/form-data
+app.use((req, res, next) => {
+  if (req.headers['content-type']?.includes('multipart/form-data')) {
     // Skip JSON parsing for file uploads
     return next();
   }
   express.json()(req, res, next);
 });
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
