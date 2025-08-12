@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
+import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -48,18 +49,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup session middleware with store configuration
+  // Setup memory store for sessions
+  const MemoryStoreSession = MemoryStore(session);
+  const sessionStore = new MemoryStoreSession({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  });
+
+  // Setup session middleware with memory store
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev',
-    resave: true, // Changed to true to ensure session is saved
-    saveUninitialized: true, // Changed to true to help with session creation
+    store: sessionStore,
+    secret: process.env.SESSION_SECRET || 'lodi-advocacia-secret-key-dev-2025',
+    resave: false,
+    saveUninitialized: false,
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax' // Added for better cross-request support
+      sameSite: 'lax'
     },
-    name: 'lodi.session' // Give the session a specific name
+    name: 'lodi.session.id',
+    rolling: true // Reset cookie expiration on each request
   }));
 
   // Add JSON parsing middleware for specific routes that need it
@@ -67,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/users', express.json());
   
   // For PUT requests on articles (updates only)
-  app.use('/api/articles/:id', (req: Request, res: Response, next: Function) => {
+  app.use('/api/articles/:id', (req: Request, res: Response, next: any) => {
     if (req.method === 'PUT') {
       express.json()(req, res, next);
     } else {
@@ -76,9 +85,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth middleware
-  const requireAuth = (req: Request, res: Response, next: Function) => {
+  const requireAuth = (req: Request, res: Response, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
     console.log('Auth check - Session user:', req.session.user ? 'Exists' : 'Not found');
+    console.log('Auth check - Session:', req.session);
     if (!req.session.user) {
       return res.status(401).json({ error: "Authentication required" });
     }
