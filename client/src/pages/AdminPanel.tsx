@@ -39,23 +39,6 @@ const AdminPanel = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Redirect if not authenticated
-  if (!loading && !user) {
-    return <Redirect to="/" />;
-  }
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
   const categories = [
     'Direito Civil',
     'Direito Bancário', 
@@ -219,6 +202,23 @@ const AdminPanel = () => {
     'Direito do Consumidor': 'bg-red-100 text-red-800',
     'Direito Empresarial': 'bg-gray-100 text-gray-800'
   };
+
+  // Redirect if not authenticated - moved after all hooks
+  if (!loading && !user) {
+    return <Redirect to="/" />;
+  }
+
+  // Loading state - moved after all hooks
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
