@@ -503,6 +503,15 @@ const AdminPanel = () => {
                           <div>
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
+                                {article.image_url && (
+                                  <div className="mb-3">
+                                    <img 
+                                      src={article.image_url} 
+                                      alt={article.title}
+                                      className="w-32 h-24 object-cover rounded-lg border border-border"
+                                    />
+                                  </div>
+                                )}
                                 <h3 className="font-semibold text-lg">{article.title}</h3>
                                 <Badge className={`mt-1 ${categoryColors[article.category] || 'bg-gray-100 text-gray-800'}`}>
                                   {article.category}

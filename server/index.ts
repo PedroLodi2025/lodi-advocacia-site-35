@@ -47,6 +47,22 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Serve uploaded images statically with proper MIME types
+  // Place this BEFORE Vite setup to avoid interference
+  app.use('/uploads', express.static('public/uploads', {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.gif')) {
+        res.setHeader('Content-Type', 'image/gif');
+      } else if (path.endsWith('.webp')) {
+        res.setHeader('Content-Type', 'image/webp');
+      }
+    }
+  }));
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
