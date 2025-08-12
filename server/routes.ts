@@ -49,26 +49,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup memory store for sessions
-  const MemoryStoreSession = MemoryStore(session);
-  const sessionStore = new MemoryStoreSession({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  });
-
-  // Setup session middleware with memory store
+  // Simplified session configuration for development
   app.use(session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'lodi-advocacia-secret-key-dev-2025',
-    resave: false,
-    saveUninitialized: false,
+    secret: 'lodi-advocacia-dev-secret-key-2025',
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
+      secure: false,
+      httpOnly: false, // Temporarily disable for debugging
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax'
+      sameSite: false // Disable for debugging
     },
-    name: 'lodi.session.id',
-    rolling: true // Reset cookie expiration on each request
+    name: 'connect.sid' // Use default session name
   }));
 
   // Add JSON parsing middleware for specific routes that need it
@@ -84,14 +76,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware
+  // Auth middleware with enhanced debugging
   const requireAuth = (req: Request, res: Response, next: any) => {
-    console.log('Auth check - Session ID:', req.sessionID);
-    console.log('Auth check - Session user:', req.session.user ? 'Exists' : 'Not found');
-    console.log('Auth check - Session:', req.session);
+    console.log('=== AUTH CHECK START ===');
+    console.log('Session ID:', req.sessionID);
+    console.log('Session user exists:', req.session.user ? 'YES' : 'NO');
+    console.log('Cookie header:', req.headers.cookie);
+    console.log('Session data:', JSON.stringify(req.session, null, 2));
+    console.log('=== AUTH CHECK END ===');
+    
     if (!req.session.user) {
+      console.log('Authentication failed - no user in session');
       return res.status(401).json({ error: "Authentication required" });
     }
+    console.log('Authentication successful for user:', req.session.user.email);
     next();
   };
 
@@ -120,7 +118,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.user = user;
       console.log('Session saved - Session ID:', req.sessionID);
       console.log('Session saved - User:', user.email);
-      res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+      
+      // Force session save before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ error: "Session save failed" });
+        }
+        console.log('Session successfully saved to store');
+        res.json({ user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+      });
     } catch (error) {
       console.error("Authentication error:", error);
       res.status(500).json({ error: "Authentication failed" });
