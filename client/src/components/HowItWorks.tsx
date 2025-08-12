@@ -135,7 +135,7 @@ const HowItWorks = () => {
               </button>
               <button 
                 onClick={() => window.open("https://chatvolt.ai/@assistentelodi", "_blank")}
-                className="bg-success text-success-foreground hover:bg-success/90 px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="text-success-foreground hover:bg-success/90 px-6 py-3 rounded-lg font-semibold transition-colors bg-[#1a9c30]"
               >
                 Chat Online
               </button>
