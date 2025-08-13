@@ -75,13 +75,12 @@ function createArticleCard(article) {
     const formattedDate = formatDate(article.createdAt);
     
     card.innerHTML = `
-        ${article.imageUrl ? `
-            <div class="h-48 bg-gray-200 overflow-hidden">
-                <img src="${article.imageUrl}" alt="${article.title}" 
-                     class="w-full h-full object-cover" 
-                     onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400\\'>Imagem não disponível</div>'">
-            </div>
-        ` : ''}
+        <div class="h-48 bg-gray-200 overflow-hidden">
+            <img src="${article.imageUrl}" alt="${article.title}" 
+                 class="w-full h-full object-cover transition-opacity duration-300" 
+                 loading="lazy"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400 text-sm\\'>Imagem não disponível</div>'">
+        </div>
         
         <div class="p-6">
             <div class="flex items-center justify-between mb-3">

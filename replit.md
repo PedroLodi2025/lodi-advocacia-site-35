@@ -43,6 +43,12 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
   - **COMPLETED**: Applied real Firebase configuration values (lodiadvocacia-79fd5)
   - **COMPLETED**: All static files created and ready for deployment
   - **FINAL STATUS**: Migration from Node.js to static site 100% complete
+  - **2025-08-13 UPDATE**: Modified image system to use ONLY external URLs
+    - Removed local image upload functionality
+    - Implemented mandatory external image URLs for all articles
+    - Added image preview and validation system
+    - Enhanced error handling for broken images
+    - Optimized image display with proper aspect ratios
 - **2025-08-12**: Successfully migrated from Replit Agent to Replit environment
   - Fixed all TypeScript errors and database connection issues
   - **CRITICAL FIX**: Replaced in-memory storage with PostgreSQL database for data persistence

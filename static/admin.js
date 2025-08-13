@@ -179,6 +179,15 @@ function createAdminArticleElement(article, index) {
         <h3 class="font-semibold text-gray-900 mb-2">${article.title}</h3>
         <p class="text-gray-600 text-sm mb-3 line-clamp-2">${article.description}</p>
         
+        ${article.imageUrl ? `
+            <div class="mb-3">
+                <img src="${article.imageUrl}" alt="${article.title}" 
+                     class="w-full h-32 object-cover rounded-lg" 
+                     loading="lazy"
+                     onerror="this.style.display='none'">
+            </div>
+        ` : ''}
+        
         <div class="flex items-center justify-between text-xs text-gray-500">
             <span>${formattedDate}</span>
             ${article.url ? `<a href="${article.url}" target="_blank" class="text-blue-600 hover:text-blue-800">Ver artigo</a>` : '<span>Sem link</span>'}
@@ -199,6 +208,12 @@ async function handleAddArticle(e) {
     const imageUrl = document.getElementById('articleImageUrl').value.trim();
     const buttonText = document.getElementById('articleButtonText').value.trim() || 'Saiba mais';
     
+    // Validate required fields
+    if (!title || !description || !imageUrl) {
+        showMessage('Por favor, preencha todos os campos obrigatórios (título, descrição e URL da imagem).', 'error', 'addArticleMessage');
+        return;
+    }
+    
     // Validate line count
     const lineCount = description.split('\n').length;
     if (lineCount > 20) {
@@ -206,8 +221,9 @@ async function handleAddArticle(e) {
         return;
     }
     
-    if (!title || !description) {
-        showMessage('Por favor, preencha todos os campos obrigatórios.', 'error', 'addArticleMessage');
+    // Validate image URL
+    if (!isValidImageUrl(imageUrl)) {
+        showMessage('Por favor, insira uma URL válida de imagem (JPG, PNG, WebP, GIF).', 'error', 'addArticleMessage');
         return;
     }
     
@@ -232,7 +248,7 @@ async function handleAddArticle(e) {
             description,
             category,
             url: url || null,
-            imageUrl: imageUrl || null,
+            imageUrl: imageUrl, // Always required now
             buttonText,
             createdAt: new Date()
         };
@@ -286,6 +302,11 @@ async function editArticle(articleId) {
         document.getElementById('editArticleImageUrl').value = article.imageUrl || '';
         document.getElementById('editArticleButtonText').value = article.buttonText || 'Saiba mais';
         
+        // Show current image preview if exists
+        if (article.imageUrl) {
+            previewImage(article.imageUrl, 'editImagePreview');
+        }
+        
         // Update line count for edit form
         updateEditLineCount();
         
@@ -310,6 +331,12 @@ async function handleEditArticle(e) {
     const imageUrl = document.getElementById('editArticleImageUrl').value.trim();
     const buttonText = document.getElementById('editArticleButtonText').value.trim() || 'Saiba mais';
     
+    // Validate required fields
+    if (!title || !description || !imageUrl) {
+        alert('Por favor, preencha todos os campos obrigatórios (título, descrição e URL da imagem).');
+        return;
+    }
+    
     // Validate line count
     const lineCount = description.split('\n').length;
     if (lineCount > 20) {
@@ -317,8 +344,9 @@ async function handleEditArticle(e) {
         return;
     }
     
-    if (!title || !description) {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+    // Validate image URL
+    if (!isValidImageUrl(imageUrl)) {
+        alert('Por favor, insira uma URL válida de imagem (JPG, PNG, WebP, GIF).');
         return;
     }
     
@@ -335,7 +363,7 @@ async function handleEditArticle(e) {
             description,
             category,
             url: url || null,
-            imageUrl: imageUrl || null,
+            imageUrl: imageUrl, // Always required now
             buttonText,
             updatedAt: new Date()
         });
@@ -515,4 +543,48 @@ function formatDate(timestamp) {
         console.error('Erro ao formatar data:', error);
         return 'Data não disponível';
     }
+}
+
+// Validate image URL format
+function isValidImageUrl(url) {
+    if (!url) return false;
+    
+    try {
+        const urlObj = new URL(url);
+        const path = urlObj.pathname.toLowerCase();
+        return path.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) !== null;
+    } catch {
+        return false;
+    }
+}
+
+// Preview image from URL
+function previewImage(url, containerId) {
+    const container = document.getElementById(containerId);
+    const imgElement = container.querySelector('img');
+    
+    if (!url || !isValidImageUrl(url)) {
+        container.classList.add('hidden');
+        return;
+    }
+    
+    // Show loading state
+    container.classList.remove('hidden');
+    imgElement.src = '';
+    imgElement.alt = 'Carregando imagem...';
+    
+    // Create a new image to test loading
+    const testImg = new Image();
+    testImg.onload = function() {
+        imgElement.src = url;
+        imgElement.alt = 'Preview da imagem';
+        container.classList.remove('hidden');
+    };
+    
+    testImg.onerror = function() {
+        container.classList.add('hidden');
+        showMessage('Não foi possível carregar a imagem desta URL. Verifique se o link está correto e acessível.', 'error');
+    };
+    
+    testImg.src = url;
 }

@@ -117,14 +117,18 @@ const firebaseConfig = {
 - Editar artigos existentes
 - Excluir artigos
 - Limite de 20 linhas por descrição
-- Suporte a URLs de imagens externas
+- **APENAS URLs de imagens externas** (sem upload local)
+- Preview automático de imagens
+- Validação de formato de imagem (JPG, PNG, WebP, GIF, SVG)
 
 ### Artigos
 - Máximo de 4 artigos simultâneos
 - Novos artigos substituem os mais antigos automaticamente
 - Categorias pré-definidas
-- Suporte a imagens via URL
+- **Imagem obrigatória via URL externa**
 - URLs opcionais para "Saiba mais"
+- Formatação automática de imagens (proporção 16:9)
+- Fallback elegante para imagens quebradas
 
 ## Categorias Disponíveis
 
