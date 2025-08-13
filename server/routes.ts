@@ -97,9 +97,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', express.json());
   app.use('/api/users', express.json());
   
-  // For PUT requests on articles (updates only)
-  app.use('/api/articles/:id', (req: Request, res: Response, next: any) => {
-    if (req.method === 'PUT') {
+  // For articles routes (both POST and PUT)
+  app.use('/api/articles', (req: Request, res: Response, next: any) => {
+    const contentType = req.headers['content-type'];
+    if (req.method === 'POST' && (!contentType || !contentType.includes('multipart/form-data'))) {
+      // Apply JSON parsing for POST requests that are not multipart
+      express.json()(req, res, next);
+    } else if (req.method === 'PUT') {
+      // Apply JSON parsing for PUT requests
       express.json()(req, res, next);
     } else {
       next();
@@ -224,11 +229,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/articles", upload.single('image'), requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/articles", requireAuth, async (req: Request, res: Response) => {
     try {
       console.log('Request body:', req.body);
-      console.log('File:', req.file);
+      console.log('Content-Type:', req.headers['content-type']);
 
+      // Handle both multipart and JSON requests
+      const contentType = req.headers['content-type'];
+      
+      if (contentType && contentType.includes('multipart/form-data')) {
+        // Handle file upload with multer
+        upload.single('image')(req, res, async (err) => {
+          if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ error: 'Erro no upload da imagem' });
+          }
+          
+          await handleArticleCreation(req, res, req.file);
+        });
+      } else {
+        // Handle JSON request
+        await handleArticleCreation(req, res, null);
+      }
+    } catch (error) {
+      console.error('Article creation error:', error);
+      res.status(500).json({ error: "Falha ao criar artigo" });
+    }
+  });
+
+  // Helper function to handle article creation
+  const handleArticleCreation = async (req: Request, res: Response, file: any) => {
+    try {
       // Validate required fields
       if (!req.body.title || !req.body.description || !req.body.category) {
         return res.status(400).json({ error: 'Título, descrição e categoria são obrigatórios' });
@@ -236,10 +267,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process image if uploaded
       let imageUrl = null;
-      if (req.file) {
-        await processImage(req.file.path);
-        imageUrl = `/uploads/${req.file.filename}`;
-        console.log('Image processed and resized to 400x200:', req.file.filename);
+      if (file) {
+        await processImage(file.path);
+        imageUrl = `/uploads/${file.filename}`;
+        console.log('Image processed and resized to 400x200:', file.filename);
+      } else if (req.body.image_url && req.body.image_url.trim()) {
+        // Use provided image URL
+        imageUrl = req.body.image_url.trim();
       }
 
       const articleData = {
@@ -263,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ error: "Falha ao criar artigo" });
     }
-  });
+  };
 
   app.put("/api/articles/:id", requireAuth, async (req: Request, res: Response) => {
     try {

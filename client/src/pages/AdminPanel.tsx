@@ -314,14 +314,13 @@ const AdminPanel = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="imageUrl">URL da Imagem (obrigatório)</Label>
+                    <Label htmlFor="imageUrl">URL da Imagem (opcional)</Label>
                     <Input
                       id="imageUrl"
                       type="url"
                       value={newArticle.image_url || ''}
                       onChange={(e) => setNewArticle({...newArticle, image_url: e.target.value})}
                       placeholder="https://exemplo.com/imagem.jpg"
-                      required
                     />
                     <p className="text-sm text-muted-foreground">
                       Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
@@ -419,13 +418,12 @@ const AdminPanel = () => {
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label>URL da Imagem (obrigatório)</Label>
+                              <Label>URL da Imagem (opcional)</Label>
                               <Input
                                 type="url"
                                 value={editingArticle.image_url || ''}
                                 onChange={(e) => setEditingArticle({...editingArticle, image_url: e.target.value})}
                                 placeholder="https://exemplo.com/imagem.jpg"
-                                required
                               />
                               <p className="text-sm text-muted-foreground">
                                 Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
