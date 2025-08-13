@@ -320,21 +320,37 @@ const AdminPanel = () => {
                       type="url"
                       value={newArticle.image_url || ''}
                       onChange={(e) => setNewArticle({...newArticle, image_url: e.target.value})}
-                      placeholder="https://exemplo.com/imagem.jpg"
+                      placeholder="https://i.imgur.com/exemplo.jpg (use URL direta da imagem)"
                     />
                     <p className="text-sm text-muted-foreground">
-                      Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
+                      Use URLs diretas de imagem (JPG, PNG, WebP). Para Imgur, use links que começam com i.imgur.com
                     </p>
                     {newArticle.image_url && (
                       <div className="mt-2">
-                        <img 
-                          src={newArticle.image_url} 
-                          alt="Preview" 
-                          className="max-w-xs max-h-48 rounded-lg border border-border object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
+                        <div className="w-[400px] h-[200px] border border-border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                          <img 
+                            src={newArticle.image_url} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (placeholder) placeholder.style.display = 'flex';
+                            }}
+                          />
+                          <div 
+                            className="w-full h-full flex items-center justify-center text-muted-foreground"
+                            style={{ display: 'none' }}
+                          >
+                            <div className="text-center">
+                              <div className="text-2xl mb-1">❌</div>
+                              <span className="text-xs">URL inválida</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Preview: 400x200px (tamanho final no site)
+                        </p>
                       </div>
                     )}
                   </div>
@@ -426,18 +442,34 @@ const AdminPanel = () => {
                                 placeholder="https://exemplo.com/imagem.jpg"
                               />
                               <p className="text-sm text-muted-foreground">
-                                Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
+                                Use URLs diretas de imagem (JPG, PNG, WebP). Para Imgur, use links que começam com i.imgur.com
                               </p>
                               {editingArticle.image_url && (
                                 <div className="mt-2">
-                                  <img 
-                                    src={editingArticle.image_url} 
-                                    alt="Preview" 
-                                    className="max-w-xs max-h-48 rounded-lg border border-border object-cover"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
+                                  <div className="w-[400px] h-[200px] border border-border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                                    <img 
+                                      src={editingArticle.image_url} 
+                                      alt="Preview" 
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                                        if (placeholder) placeholder.style.display = 'flex';
+                                      }}
+                                    />
+                                    <div 
+                                      className="w-full h-full flex items-center justify-center text-muted-foreground"
+                                      style={{ display: 'none' }}
+                                    >
+                                      <div className="text-center">
+                                        <div className="text-2xl mb-1">❌</div>
+                                        <span className="text-xs">URL inválida</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Preview: 400x200px (tamanho final no site)
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -452,15 +484,26 @@ const AdminPanel = () => {
                           <div>
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
-                                {article.image_url && (
-                                  <div className="mb-3 w-32 h-20 bg-gray-50 dark:bg-gray-800 rounded-lg border border-border flex items-center justify-center overflow-hidden">
+                                <div className="mb-3 w-32 h-20 bg-gray-50 dark:bg-gray-800 rounded-lg border border-border flex items-center justify-center overflow-hidden">
+                                  {article.image_url ? (
                                     <img 
                                       src={article.image_url} 
                                       alt={article.title}
-                                      className="max-w-full max-h-full object-contain"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                                        if (placeholder) placeholder.style.display = 'flex';
+                                      }}
                                     />
+                                  ) : null}
+                                  <div 
+                                    className="w-full h-full flex items-center justify-center text-muted-foreground text-xs"
+                                    style={{ display: article.image_url ? 'none' : 'flex' }}
+                                  >
+                                    📄
                                   </div>
-                                )}
+                                </div>
                                 <h3 className="font-semibold text-lg">{article.title}</h3>
                                 <Badge className={`mt-1 ${categoryColors[article.category] || 'bg-gray-100 text-gray-800'}`}>
                                   {article.category}
