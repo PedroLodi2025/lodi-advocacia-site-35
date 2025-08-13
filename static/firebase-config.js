@@ -2,12 +2,13 @@
 // IMPORTANTE: Substitua estes valores pelos valores reais do seu projeto Firebase
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com", 
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAKKLAXfNlwD6eqvkIltZhQ9F4TTPEHzek",
+    authDomain: "lodiadvocacia-79fd5.firebaseapp.com",
+    projectId: "lodiadvocacia-79fd5",
+    storageBucket: "lodiadvocacia-79fd5.firebasestorage.app",
+    messagingSenderId: "616201446435",
+    appId: "1:616201446435:web:c53eecd4e0b77bceaf3d96",
+    measurementId: "G-E7Z7T853MQ"
 };
 
 // Instruções para configurar o Firebase:
