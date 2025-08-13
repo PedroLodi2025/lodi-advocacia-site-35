@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lodi Advocacia - Especialista em Direito</title>
+    <meta name="description" content="Lodi Advocacia - Especialistas em Direito Bancário, Civil, Trabalhista e do Consumidor. Mais de 20 anos de experiência jurídica.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase configuration - você precisará substituir pelos seus valores
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        window.firebaseApp = initializeApp(firebaseConfig);
+        window.auth = getAuth(window.firebaseApp);
+        window.db = getFirestore(window.firebaseApp);
+    </script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">PL</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Lodi Advocacia</h1>
+                        <p class="text-sm text-gray-600">Especialista em Direito</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#inicio" class="text-gray-700 hover:text-blue-600">Início</a>
+                    <a href="#experiencia" class="text-gray-700 hover:text-blue-600">Experiência</a>
+                    <a href="#artigos" class="text-gray-700 hover:text-blue-600">Artigos</a>
+                    <a href="#servicos" class="text-gray-700 hover:text-blue-600">Serviços</a>
+                    <a href="#contato" class="text-gray-700 hover:text-blue-600">Contato</a>
+                    <button onclick="showLoginModal()" class="text-blue-600 hover:text-blue-800 font-medium">Admin</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="py-20 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Defendendo Seus <span class="text-yellow-400">Direitos</span>
+            </h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">
+                Com mais de 20 anos de experiência, oferecemos soluções jurídicas especializadas 
+                em Direito Bancário, Civil, Trabalhista e do Consumidor.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#contato" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-8 py-3 rounded-lg font-semibold transition-colors">
+                    Consulta Gratuita
+                </a>
+                <a href="https://chatvolt.ai/@assistentelodi" target="_blank" class="bg-transparent border-2 border-white hover:bg-white hover:text-blue-800 px-8 py-3 rounded-lg font-semibold transition-colors">
+                    Assistência Online
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section id="experiencia" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Nossa Experiência</h2>
+                <p class="text-gray-600">Números que demonstram nossa dedicação e competência</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">+20 Anos</div>
+                    <div class="text-gray-600">De Experiência</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">Inúmeros</div>
+                    <div class="text-gray-600">Casos Resolvidos</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">Alta</div>
+                    <div class="text-gray-600">Taxa de Sucesso</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section id="artigos" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                    Artigos <span class="text-blue-600">Recentes</span>
+                </h2>
+                <p class="text-gray-600">Mantenha-se informado sobre seus direitos</p>
+            </div>
+            <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Articles will be loaded here from Firebase -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="servicos" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Áreas de Atuação</h2>
+                <p class="text-gray-600">Especialização em diversas áreas do direito</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito Bancário</h3>
+                    <p class="text-gray-600">Defesa contra abusos bancários, revisão de contratos e cobranças indevidas.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito Civil</h3>
+                    <p class="text-gray-600">Contratos, responsabilidade civil, direitos reais e obrigações.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito do Trabalho</h3>
+                    <p class="text-gray-600">Direitos trabalhistas, rescisões, assédio moral e acidentes de trabalho.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito de Família</h3>
+                    <p class="text-gray-600">Divórcio, pensão alimentícia, guarda de filhos e união estável.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito do Consumidor</h3>
+                    <p class="text-gray-600">Proteção aos direitos do consumidor, contratos abusivos e indenizações.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Direito Empresarial</h3>
+                    <p class="text-gray-600">Constituição de empresas, contratos empresariais e recuperação judicial.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contato" class="py-16 bg-blue-600 text-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Entre em Contato</h2>
+                <p class="text-blue-100">Agende sua consulta gratuita</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Informações de Contato</h3>
+                    <div class="space-y-3">
+                        <p class="flex items-center">
+                            <span class="mr-3">📧</span>
+                            pedro.lodi.adv@gmail.com
+                        </p>
+                        <p class="flex items-center">
+                            <span class="mr-3">📱</span>
+                            (11) 99999-9999
+                        </p>
+                        <p class="flex items-center">
+                            <span class="mr-3">📍</span>
+                            São Paulo, SP
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Horário de Atendimento</h3>
+                    <div class="space-y-2">
+                        <p>Segunda a Sexta: 8h às 18h</p>
+                        <p>Sábado: 8h às 12h</p>
+                        <p>Domingo: Plantão de Emergência</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 Lodi Advocacia. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Login Administrativo</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Email:</label>
+                    <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Senha:</label>
+                    <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">
+                    Entrar
+                </button>
+                <div class="text-center">
+                    <button type="button" onclick="hideLoginModal()" class="text-gray-500 hover:text-gray-700">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+            <div id="loginError" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm"></div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="articles.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

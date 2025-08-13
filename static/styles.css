@@ -1,0 +1,150 @@
+/* Custom styles for Lodi Advocacia */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Tab styles */
+.tab-button {
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    color: #2563eb;
+    border-color: #2563eb;
+}
+
+.tab-button:not(.active) {
+    color: #6b7280;
+    border-color: transparent;
+}
+
+.tab-button:not(.active):hover {
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.tab-content {
+    display: block;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* Modal animations */
+#loginModal {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+#loginModal.show {
+    display: flex;
+}
+
+#editModal {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+#editModal.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Article card hover effects */
+.article-card {
+    transition: all 0.3s ease;
+}
+
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Category badges */
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.category-civil { background-color: rgba(59, 130, 246, 0.1); color: #2563eb; }
+.category-bancario { background-color: rgba(16, 185, 129, 0.1); color: #059669; }
+.category-trabalho { background-color: rgba(245, 158, 11, 0.1); color: #d97706; }
+.category-familia { background-color: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+.category-consumidor { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; }
+.category-empresarial { background-color: rgba(107, 114, 128, 0.1); color: #374151; }
+
+/* Loading animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    #loginModal .bg-white,
+    #editModal .bg-white {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+}
+
+/* Form validation styles */
+.form-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Success message */
+.success-message {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Line counter for textarea */
+.line-counter {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.line-counter.warning {
+    color: #f59e0b;
+}
+
+.line-counter.error {
+    color: #ef4444;
+}

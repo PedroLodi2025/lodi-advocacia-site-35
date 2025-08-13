@@ -32,6 +32,14 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
 - All client-side database calls moved to server routes
 
 ## Recent Changes
+- **2025-08-13**: **MAJOR UPDATE** - Converted to static site for Hostinger hosting
+  - Removed all Node.js/Express backend dependencies
+  - Implemented Firebase Authentication for admin login
+  - Migrated to Firebase Firestore for article storage
+  - Created complete static HTML/CSS/JS structure
+  - Added comprehensive setup documentation
+  - Ready for direct upload to Hostinger hosting
+  - Maintained all original functionality (admin panel, articles, authentication)
 - **2025-08-12**: Successfully migrated from Replit Agent to Replit environment
   - Fixed all TypeScript errors and database connection issues
   - **CRITICAL FIX**: Replaced in-memory storage with PostgreSQL database for data persistence
