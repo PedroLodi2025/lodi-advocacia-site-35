@@ -1,7 +1,13 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, setAuthToken, removeAuthToken } from '@/lib/queryClient';
-import type { User } from '@shared/schema';
+import { 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 
 interface AuthUser {
   id: string;
@@ -26,42 +32,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session on app load
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await apiRequest('/api/auth/me');
-      setUser(response.user);
-    } catch (error) {
-      // User not authenticated, which is fine
-      setUser(null);
-    } finally {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        try {
+          // Get user data from Firestore
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUser({
+              id: firebaseUser.uid,
+              email: firebaseUser.email!,
+              username: userData.username || firebaseUser.email!.split('@')[0],
+              role: userData.role || 'admin'
+            });
+          } else {
+            // If user doesn't exist in Firestore, create basic user data
+            setUser({
+              id: firebaseUser.uid,
+              email: firebaseUser.email!,
+              username: firebaseUser.email!.split('@')[0],
+              role: 'admin' // Default to admin for now
+            });
+          }
+        } catch (error) {
+          console.error('Error getting user data:', error);
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email!,
+            username: firebaseUser.email!.split('@')[0],
+            role: 'admin'
+          });
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await apiRequest('/api/auth/signin', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
-      
-      // Save token if provided
-      if (response.token) {
-        setAuthToken(response.token);
-        console.log('Token saved to localStorage:', response.token);
-      }
-      
-      setUser(response.user);
+      await signInWithEmailAndPassword(auth, email, password);
+      // User state will be updated by onAuthStateChanged
       toast({
         title: "Login realizado",
         description: "Bem-vindo de volta!",
       });
       return { error: null };
     } catch (error: any) {
+      console.error('Erro no login:', error.message);
       const errorMessage = error.message || "Erro no login";
       toast({
         title: "Erro no login",
@@ -73,44 +94,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    try {
-      const response = await apiRequest('/api/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify({ email, password, username }),
-      });
-      
-      setUser(response.user);
-      toast({
-        title: "Cadastro realizado",
-        description: "Conta criada com sucesso!",
-      });
-      return { error: null };
-    } catch (error: any) {
-      const errorMessage = error.message || "Erro no cadastro";
-      toast({
-        title: "Erro no cadastro",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return { error };
-    }
+    // For now, disable signup as this should be admin-only
+    const errorMessage = "Área Exclusiva para Administradores do Sistema";
+    toast({
+      title: "Erro no cadastro",
+      description: errorMessage,
+      variant: "destructive",
+    });
+    return { error: new Error(errorMessage) };
   };
 
   const signOut = async () => {
     try {
-      await apiRequest('/api/auth/signout', {
-        method: 'POST',
-      });
-      removeAuthToken(); // Clear token from localStorage
-      setUser(null);
+      await firebaseSignOut(auth);
       toast({
         title: "Logout realizado",
         description: "Até logo!",
       });
     } catch (error) {
-      // Even if the API call fails, clear local state and token
-      removeAuthToken();
-      setUser(null);
+      console.error('Logout error:', error);
     }
   };
 

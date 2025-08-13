@@ -32,6 +32,14 @@ This is a legal website for Lodi Advocacia, a Portuguese law firm. The project h
 - All client-side database calls moved to server routes
 
 ## Recent Changes
+- **2025-08-13**: **MIGRATION COMPLETE** - Successfully migrated from Express.js/PostgreSQL to Firebase
+  - Removed all Express.js server dependencies and PostgreSQL database
+  - Implemented Firebase Authentication for secure admin login
+  - Migrated all article CRUD operations to Firebase Firestore
+  - Updated all frontend components to use Firebase services
+  - Configured pure static client-side application with Vite dev server
+  - Admin user can login with: pedro.lodi.adv@gmail.com / ph230570
+  - Maintains all original functionality while eliminating backend complexity
 - **2025-08-13**: **MAJOR UPDATE** - Successfully converted to static site for Hostinger hosting
   - Removed all Node.js/Express backend dependencies
   - Implemented Firebase Authentication for admin login

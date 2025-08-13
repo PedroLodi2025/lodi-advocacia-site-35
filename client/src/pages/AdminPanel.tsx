@@ -9,9 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import { Plus, Edit, Trash2, Users, FileText, LogOut, Upload } from 'lucide-react';
-import type { Article } from '@shared/schema';
+import { getArticles, createArticle, updateArticle, deleteArticle, Article } from '@/lib/articles';
 
 interface Profile {
   id: string;
@@ -55,8 +54,8 @@ const AdminPanel = () => {
   const loadArticles = async () => {
     setIsLoadingData(true);
     try {
-      const articles = await apiRequest('/api/articles');
-      setArticles(articles);
+      const articlesList = await getArticles();
+      setArticles(articlesList);
     } catch (error) {
       toast({
         title: "Erro",
@@ -69,16 +68,9 @@ const AdminPanel = () => {
   };
 
   const loadProfiles = async () => {
-    try {
-      const users = await apiRequest('/api/users');
-      setProfiles(users);
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar usuários",
-        variant: "destructive"
-      });
-    }
+    // For now, we'll skip loading profiles since we're using Firebase Auth
+    // This can be implemented later if needed
+    setProfiles([]);
   };
 
 
@@ -86,20 +78,18 @@ const AdminPanel = () => {
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) return;
+    
     try {
-      await apiRequest('/api/articles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: newArticle.title,
-          description: newArticle.description,
-          category: newArticle.category,
-          button_text: newArticle.button_text,
-          url: newArticle.url,
-          image_url: newArticle.image_url
-        })
+      await createArticle({
+        user_id: user.id,
+        title: newArticle.title,
+        description: newArticle.description,
+        category: newArticle.category,
+        button_text: newArticle.button_text,
+        url: newArticle.url,
+        image_url: newArticle.image_url,
+        date: new Date().toISOString().split('T')[0]
       });
 
       toast({
@@ -128,22 +118,18 @@ const AdminPanel = () => {
 
   const handleUpdateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingArticle) return;
+    if (!editingArticle || !user) return;
 
     try {
-      await apiRequest(`/api/articles/${editingArticle.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: editingArticle.title,
-          description: editingArticle.description,
-          category: editingArticle.category,
-          button_text: editingArticle.button_text,
-          url: editingArticle.url,
-          image_url: editingArticle.image_url
-        }),
+      await updateArticle(editingArticle.id, {
+        user_id: user.id,
+        title: editingArticle.title,
+        description: editingArticle.description,
+        category: editingArticle.category,
+        button_text: editingArticle.button_text,
+        url: editingArticle.url,
+        image_url: editingArticle.image_url,
+        date: editingArticle.date
       });
 
       toast({
@@ -165,9 +151,7 @@ const AdminPanel = () => {
     if (!confirm('Tem certeza que deseja excluir este artigo?')) return;
 
     try {
-      await apiRequest(`/api/articles/${id}`, {
-        method: 'DELETE',
-      });
+      await deleteArticle(id);
 
       toast({
         title: "Sucesso",

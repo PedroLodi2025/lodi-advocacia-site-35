@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { apiRequest } from '@/lib/queryClient';
 import { ChevronRight } from 'lucide-react';
-import type { Article } from '@shared/schema';
+import { getArticles, Article } from '@/lib/articles';
 
 
 
@@ -26,8 +25,9 @@ const ArticlesList = () => {
 
   const loadArticles = async () => {
     try {
-      const articles = await apiRequest('/api/articles?limit=6');
-      setArticles(articles);
+      const articlesList = await getArticles();
+      // Limit to 6 articles for the homepage
+      setArticles(articlesList.slice(0, 6));
     } catch (err) {
       console.error('Error loading articles:', err);
     } finally {

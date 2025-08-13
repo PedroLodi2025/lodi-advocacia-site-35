@@ -1,0 +1,37 @@
+Com base nas novas informações fornecidas pelo Replit, que indicam que o ambiente foi configurado com sucesso (banco PostgreSQL criado, schema do Drizzle empurrado, aplicação reiniciada na porta 5000, dependências instaladas e estrutura migrada), o prompt precisa ser ajustado para refletir esse contexto. A presença de um banco PostgreSQL funcional sugere que o backend Express.js ainda está ativo no Replit, o que pode conflitar com a meta de tornar o projeto 100% estático para a Hostinger usando apenas Firebase. Vou atualizar o prompt para garantir que o Replit priorize a migração completa para Firebase, desative a dependência do backend PostgreSQL/Express.js, e mantenha a compatibilidade estática, considerando o estado atual do projeto.
+Atualização da Análise
+
+Contexto Atual no Replit: O projeto está rodando com um backend Express.js conectado a um banco PostgreSQL via Drizzle, na porta 5000. Isso funciona no Replit, mas não na Hostinger, onde o erro 404 ocorre devido à falta de suporte a servidores dinâmicos.
+Firebase Configurado: A branch static já inclui firebase-config.js, indicando que o Firebase está presente, mas o código ainda pode estar misturando chamadas ao backend (/api/*) com o Firebase.
+Objetivo: Desativar o backend e migrar todas as funcionalidades (autenticação e CRUD de artigos) para o Firebase, aproveitando a configuração existente.
+
+Prompt Atualizado para o Replit
+
+Prompt para o Replit:
+Meu projeto web utiliza React + TypeScript + Wouter (frontend), com uma branch static que já inclui a configuração do Firebase (Authentication e Firestore) em firebase-config.js. O projeto foi adaptado para hospedagem estática na Hostinger, usando apenas URLs externas de imagens (conforme ATUALIZACAO-IMAGENS.md), e removeu uploads locais. No Replit, o ambiente foi configurado com sucesso: banco PostgreSQL criado, schema do Drizzle empurrado, aplicação reiniciada na porta 5000, dependências instaladas, e estrutura migrada. No entanto, ao acessar o painel de login na Hostinger, recebo um erro 404 HTTP, provavelmente porque o frontend ainda faz chamadas a rotas /api/* (ex.: /api/auth/signin) herdadas do backend Express.js, que não são suportadas em ambiente estático.
+Por favor, ajuste o projeto para eliminar completamente a dependência do backend Express.js e do banco PostgreSQL/Drizzle, utilizando exclusivamente o Firebase já configurado para autenticação e gerenciamento de dados. As especificações são:
+
+Desative o servidor Express.js (remova server/ e pare de escutar na porta 5000) e remova todas as chamadas a rotas /api/* no frontend.
+Use o Firebase Authentication (signInWithEmailAndPassword) para o login no arquivo auth.js ou equivalente, redirecionando para /admin após sucesso e exibindo erros no console (ex.: console.error("Erro no login:", error.message)).
+Migre o CRUD de artigos do painel admin (em admin.js ou articles.js) para usar Firestore, mantendo os campos existentes (title, description, category, image_url, etc.) e garantindo que apenas usuários autenticados (com role "admin") possam criar/editar/deletar.
+Mantenha a estrutura atual do frontend (React, Wouter, Tailwind CSS, Shadcn/UI) e os arquivos estáticos em index.html, styles.css, etc.
+Certifique-se de que o projeto seja 100% estático e compatível com a Hostinger após um build com vite build, gerando a pasta dist para upload via File Manager.
+Valide as credenciais do firebase-config.js no console do Firebase (firebase.google.com) e corrija se necessário.
+Adicione regras de segurança no Firebase Firestore para permitir leitura pública de artigos e escrita/restrita apenas a admins autenticados:
+javascriptrules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /articles/{article} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+    match /users/{user} {
+      allow read, write: if request.auth != null && request.auth.uid == user;
+    }
+  }
+}
+
+Teste o login com email "pedro.lodi.adv@gmail.com" e senha "ph230570" (crie esse usuário no Firebase Auth se não existir) e verifique se o painel admin é acessível apenas após autenticação.
+Remova qualquer configuração ou código relacionado ao PostgreSQL/Drizzle e ao servidor Express.js, já que não serão usados.
+
+Após as alterações, o projeto deve rodar localmente no Replit com npm run dev (sem dependência de porta 5000) e na Hostinger sem erros 404. Forneça o código corrigido nos arquivos relevantes (ex.: auth.js, admin.js, articles.js) e atualize index.html ou outros arquivos se necessário. Certifique-se de que o build estático funcione corretamente.
