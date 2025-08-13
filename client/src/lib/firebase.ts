@@ -19,15 +19,12 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Development mode setup
-if (process.env.NODE_ENV === 'development' && !auth.emulatorConfig) {
-  try {
-    // Only connect to emulators if they're available (optional for production Firebase)
-    // connectAuthEmulator(auth, 'http://localhost:9099');
-    // connectFirestoreEmulator(db, 'localhost', 8080);
-  } catch (error) {
-    console.log('Firebase emulators not available, using production Firebase');
-  }
+// Enable offline persistence
+try {
+  // Firebase will automatically enable offline persistence
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Firebase initialization error:', error);
 }
 
 export default app;

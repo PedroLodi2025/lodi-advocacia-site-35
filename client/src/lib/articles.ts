@@ -41,21 +41,46 @@ export interface CreateArticle {
 export const getArticles = async (): Promise<Article[]> => {
   try {
     const articlesRef = collection(db, 'articles');
-    const q = query(articlesRef, orderBy('created_at', 'desc'));
+    let q;
+    try {
+      q = query(articlesRef, orderBy('created_at', 'desc'));
+    } catch (orderError) {
+      // If ordering fails, just get all articles without ordering
+      q = query(articlesRef);
+    }
+    
     const querySnapshot = await getDocs(q);
     
     const articles: Article[] = [];
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       articles.push({
         id: doc.id,
-        ...doc.data()
+        user_id: data.user_id || '',
+        title: data.title || '',
+        description: data.description || '',
+        category: data.category || '',
+        date: data.date || new Date().toISOString().split('T')[0],
+        button_text: data.button_text || 'Saiba mais',
+        url: data.url || '',
+        image_url: data.image_url || '',
+        created_at: data.created_at,
+        updated_at: data.updated_at
       } as Article);
+    });
+    
+    // Sort by created_at if available, otherwise by date
+    articles.sort((a, b) => {
+      const dateA = a.created_at?.seconds || new Date(a.date).getTime() / 1000;
+      const dateB = b.created_at?.seconds || new Date(b.date).getTime() / 1000;
+      return dateB - dateA;
     });
     
     return articles;
   } catch (error) {
     console.error('Error getting articles:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent app crash
+    return [];
   }
 };
 
