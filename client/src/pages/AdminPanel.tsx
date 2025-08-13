@@ -33,11 +33,9 @@ const AdminPanel = () => {
     description: '',
     category: 'Direito Civil',
     button_text: 'Saiba mais',
-    url: ''
+    url: '',
+    image_url: ''
   });
-
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const categories = [
     'Direito Civil',
@@ -83,94 +81,25 @@ const AdminPanel = () => {
     }
   };
 
-  // Function to resize image before upload
-  const resizeImage = (file: File, maxWidth: number = 800, maxHeight: number = 600, quality: number = 0.8): Promise<File> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Calculate new dimensions maintaining aspect ratio
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw and compress image
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const resizedFile = new File([blob], file.name, {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            });
-            resolve(resizedFile);
-          } else {
-            resolve(file);
-          }
-        }, 'image/jpeg', quality);
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        // Resize image for optimal web display
-        const resizedFile = await resizeImage(file, 800, 600, 0.8);
-        setSelectedImage(resizedFile);
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setImagePreview(event.target?.result as string);
-        };
-        reader.readAsDataURL(resizedFile);
-      } catch (error) {
-        console.error('Error processing image:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao processar a imagem",
-          variant: "destructive"
-        });
-      }
-    }
-  };
 
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const formData = new FormData();
-      formData.append('title', newArticle.title);
-      formData.append('description', newArticle.description);
-      formData.append('category', newArticle.category);
-      formData.append('button_text', newArticle.button_text);
-      formData.append('url', newArticle.url);
-      
-      if (selectedImage) {
-        formData.append('image', selectedImage);
-      }
-
       await apiRequest('/api/articles', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newArticle.title,
+          description: newArticle.description,
+          category: newArticle.category,
+          button_text: newArticle.button_text,
+          url: newArticle.url,
+          image_url: newArticle.image_url
+        })
       });
 
       toast({
@@ -183,11 +112,9 @@ const AdminPanel = () => {
         description: '',
         category: 'Direito Civil',
         button_text: 'Saiba mais',
-        url: ''
+        url: '',
+        image_url: ''
       });
-      
-      setSelectedImage(null);
-      setImagePreview(null);
       
       loadArticles();
     } catch (error: any) {
@@ -206,12 +133,16 @@ const AdminPanel = () => {
     try {
       await apiRequest(`/api/articles/${editingArticle.id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           title: editingArticle.title,
           description: editingArticle.description,
           category: editingArticle.category,
           button_text: editingArticle.button_text,
-          url: editingArticle.url
+          url: editingArticle.url,
+          image_url: editingArticle.image_url
         }),
       });
 
@@ -383,33 +314,28 @@ const AdminPanel = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="image">Imagem do Artigo (opcional)</Label>
+                    <Label htmlFor="imageUrl">URL da Imagem (obrigatório)</Label>
                     <Input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="cursor-pointer"
+                      id="imageUrl"
+                      type="url"
+                      value={newArticle.image_url || ''}
+                      onChange={(e) => setNewArticle({...newArticle, image_url: e.target.value})}
+                      placeholder="https://exemplo.com/imagem.jpg"
+                      required
                     />
-                    {imagePreview && (
+                    <p className="text-sm text-muted-foreground">
+                      Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
+                    </p>
+                    {newArticle.image_url && (
                       <div className="mt-2">
                         <img 
-                          src={imagePreview} 
+                          src={newArticle.image_url} 
                           alt="Preview" 
                           className="max-w-xs max-h-48 rounded-lg border border-border object-cover"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm" 
-                          className="mt-2"
-                          onClick={() => {
-                            setSelectedImage(null);
-                            setImagePreview(null);
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
                           }}
-                        >
-                          Remover Imagem
-                        </Button>
+                        />
                       </div>
                     )}
                   </div>
@@ -491,6 +417,31 @@ const AdminPanel = () => {
                                   placeholder="https://..."
                                 />
                               </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>URL da Imagem (obrigatório)</Label>
+                              <Input
+                                type="url"
+                                value={editingArticle.image_url || ''}
+                                onChange={(e) => setEditingArticle({...editingArticle, image_url: e.target.value})}
+                                placeholder="https://exemplo.com/imagem.jpg"
+                                required
+                              />
+                              <p className="text-sm text-muted-foreground">
+                                Insira a URL completa de uma imagem externa (JPG, PNG, WebP)
+                              </p>
+                              {editingArticle.image_url && (
+                                <div className="mt-2">
+                                  <img 
+                                    src={editingArticle.image_url} 
+                                    alt="Preview" 
+                                    className="max-w-xs max-h-48 rounded-lg border border-border object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              )}
                             </div>
                             <div className="flex space-x-2">
                               <Button type="submit" size="sm">Salvar</Button>
